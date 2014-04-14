@@ -28,7 +28,7 @@
 			<version>${legacy-imglib1.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>sc.fiji</groupId>
+			<groupId>${jep.groupId}</groupId>
 			<artifactId>jep</artifactId>
 			<version>${jep.version}</version>
 		</dependency>
