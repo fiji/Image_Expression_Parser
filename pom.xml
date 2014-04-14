@@ -40,6 +40,11 @@
 		</dependency>
 	</dependencies>
 
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.imagej.net/job/Image_Expression_Parser/</url>
+	</ciManagement>
+
 	<scm>
 		<connection>scm:git:git://github.com/fiji/Image_Expression_Parser</connection>
 		<developerConnection>scm:git:git@github.com:fiji/Image_Expression_Parser</developerConnection>
