@@ -27,7 +27,7 @@
 			<artifactId>legacy-imglib1</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>${jep.groupId}</groupId>
+			<groupId>org.scijava</groupId>
 			<artifactId>jep</artifactId>
 		</dependency>
 		<dependency>
