@@ -4,15 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.PrintStream;
 
-import mpicbg.imglib.container.array.ArrayContainerFactory;
-import mpicbg.imglib.cursor.Cursor;
-import mpicbg.imglib.cursor.LocalizableByDimCursor;
-import mpicbg.imglib.cursor.LocalizableCursor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.ImageFactory;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.integer.UnsignedShortType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -34,7 +33,7 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 	private final static int WIDTH = 9; 
 	private final static int HEIGHT = 9;
 	/** 16-bit image */
-	public static Image<UnsignedShortType> image_A, image_B;
+	public static Img<UnsignedShortType> image_A, image_B;
 	public ImgLibParser<T> parser;
 	
 	
@@ -43,27 +42,24 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		
 		
 		// Create source images
-		ArrayContainerFactory cfact = new ArrayContainerFactory();
 		UnsignedShortType type = new UnsignedShortType();
-		ImageFactory<UnsignedShortType> ifact = new ImageFactory<UnsignedShortType>(type, cfact);
+		ImgFactory<UnsignedShortType> ifact = new ArrayImgFactory<UnsignedShortType>();
 		
-		image_A = ifact.createImage(new int[] {WIDTH, HEIGHT}, "A");
-		image_B = ifact.createImage(new int[] {WIDTH, HEIGHT}, "B");
+		image_A = ifact.create(new int[] {WIDTH, HEIGHT}, type);
+		image_B = ifact.create(new int[] {WIDTH, HEIGHT}, type);
 		
-		LocalizableCursor<UnsignedShortType> ca = image_A.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> cb = image_B.createLocalizableByDimCursor();
+		Cursor<UnsignedShortType> ca = image_A.localizingCursor();
+		RandomAccess<UnsignedShortType> cb = image_B.randomAccess();
 
-		int[] pos = ca.createPositionArray();
+		long[] pos = new long[ca.numDimensions()];
 		while (ca.hasNext()) {
 			ca.fwd();
-			ca.getPosition(pos);
+			ca.localize(pos);
 			cb.setPosition(ca);
-			ca.getType().set( pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1]) );
-			cb.getType().set( 256 - (pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1]) ) );
+			ca.get().set( (int)(pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1])) );
+			cb.get().set( (int)(256 - (pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1])) ) );
 			
 		}
-		ca.close();
-		cb.close();
 //		echoImage(image_A, System.out);
 //		echoImage(image_B, System.out);		
 	}
@@ -83,40 +79,37 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		parser.addVariable("A", image_A);
 		parser.addVariable("B", image_B);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		Cursor<T> rc = result.createCursor();
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.cursor();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
-				assertEquals(256.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(256.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
 		}
 
 		// Singleton expansion
 		expression = "A+256";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		LocalizableByDimCursor<T> rclbd = result.createLocalizableByDimCursor();
-		LocalizableCursor<UnsignedShortType> ca = image_A.createLocalizableCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		RandomAccess<T> rclbd = result.randomAccess();
+		Cursor<UnsignedShortType> ca = image_A.localizingCursor();
 		try {
 			while (ca.hasNext()) {
 				ca.fwd();
 				rclbd.setPosition(ca);
-				assertEquals(256.0f+ca.getType().getRealFloat(), rclbd.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(256.0f+ca.get().getRealFloat(), rclbd.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rclbd.close();
 		}
 		
 		// Numbers addition
@@ -134,61 +127,56 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A-A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		Cursor<T> rc = result.createCursor();
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.cursor();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
-				assertEquals(0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A-256";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		LocalizableByDimCursor<T> rclbd = result.createLocalizableByDimCursor();
-		LocalizableCursor<UnsignedShortType> ca = image_A.createLocalizableCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		RandomAccess<T> rclbd = result.randomAccess();
+		Cursor<UnsignedShortType> ca = image_A.localizingCursor();
 		try {
 			while (ca.hasNext()) {
 				ca.fwd();
 				rclbd.setPosition(ca);
-				assertEquals(ca.getType().getRealFloat()-256.0f, rclbd.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()-256.0f, rclbd.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rclbd.close();
 		}
 		
 		// Left-singleton expansion
 		expression = "256-A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rclbd = result.createLocalizableByDimCursor();
-		ca = image_A.createLocalizableCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rclbd = result.randomAccess();
+		ca = image_A.localizingCursor();
 		try {
 			while (ca.hasNext()) {
 				ca.fwd();
 				rclbd.setPosition(ca);
-				assertEquals(256.0f-ca.getType().getRealFloat(), rclbd.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(256.0f-ca.get().getRealFloat(), rclbd.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rclbd.close();
 		}
 		
 		// Numbers 
@@ -207,68 +195,61 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		parser.addVariable("A", image_A);
 		parser.addVariable("B", image_B);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
-		LocalizableByDimCursor<UnsignedShortType> cb = image_B.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
+		RandomAccess<UnsignedShortType> cb = image_B.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
 				cb.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat() * cb.getType().getRealFloat(), 
-						rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat() * cb.get().getRealFloat(), 
+						rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
-			cb.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A*10";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()*10.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()*10.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "10*A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()*10.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()*10.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -286,17 +267,17 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A/A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				if ( ca.getType().getRealFloat() == 0.0f) {
-					assertEquals(Float.NaN, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				if ( ca.get().getRealFloat() == 0.0f) {
+					assertEquals(Float.NaN, rc.get().getRealFloat(), Float.MIN_VALUE);
 				} else {
-					assertEquals(1.0f,	rc.getType().getRealFloat(), Float.MIN_VALUE);
+					assertEquals(1.0f,	rc.get().getRealFloat(), Float.MIN_VALUE);
 				}
 			}
 		} catch (AssertionError ae) {
@@ -304,50 +285,44 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A/10";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()/10.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()/10.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "10/A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(10/ca.getType().getRealFloat(), rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(10/ca.get().getRealFloat(), rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -367,64 +342,58 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A < A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE); // never true
+				assertEquals(0.0f, rc.get().getRealFloat(), Float.MIN_VALUE); // never true
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A < 128";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()<128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()<128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "128 < A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()>128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()>128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -443,64 +412,58 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A > A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE); // never true
+				assertEquals(0.0f, rc.get().getRealFloat(), Float.MIN_VALUE); // never true
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A > 128";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()>128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()>128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "128 > A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()<128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()<128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -519,64 +482,58 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A >= A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(1.0f, rc.getType().getRealFloat(), Float.MIN_VALUE); // always true
+				assertEquals(1.0f, rc.get().getRealFloat(), Float.MIN_VALUE); // always true
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A >= 128";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()>=128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()>=128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "128 >= A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()<=128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()<=128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -595,64 +552,58 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A <= A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(1.0f, rc.getType().getRealFloat(), Float.MIN_VALUE); // always true
+				assertEquals(1.0f, rc.get().getRealFloat(), Float.MIN_VALUE); // always true
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A <= 128";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()<=128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()<=128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "128 <= A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()>=128? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()>=128? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -672,64 +623,58 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A == A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(1.0f, rc.getType().getRealFloat(), Float.MIN_VALUE); // always true
+				assertEquals(1.0f, rc.get().getRealFloat(), Float.MIN_VALUE); // always true
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A == 128";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()==128f? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()==128f? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "128 == A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()==128f? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()==128f? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -749,64 +694,58 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		String expression = "A != A";
 		parser.addVariable("A", image_A);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE); // never true
+				assertEquals(0.0f, rc.get().getRealFloat(), Float.MIN_VALUE); // never true
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A != 128";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()==128f? 0.0f:1.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()==128f? 0.0f:1.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "128 != A";
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()==128f? 0.0f:1.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()==128f? 0.0f:1.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -827,68 +766,62 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		parser.addVariable("A", image_A);
 		parser.addVariable("B", image_B);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
-		LocalizableByDimCursor<UnsignedShortType> cb = image_B.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
+		RandomAccess<UnsignedShortType> cb = image_B.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
 				cb.setPosition(rc);
 				assertEquals( 
-						(ca.getType().getRealFloat() != 0f && cb.getType().getRealFloat() != 0f)? 1.0f:0.0f,
-						 rc.getType().getRealFloat(), Float.MIN_VALUE);
+						(ca.get().getRealFloat() != 0f && cb.get().getRealFloat() != 0f)? 1.0f:0.0f,
+						 rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A && 1"; // will be true if A is non zero
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()!=0f? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()!=0f? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "0 && A"; // always false
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -909,66 +842,60 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 		parser.addVariable("A", image_A);
 		parser.addVariable("B", image_B);
 		Node root_node = parser.parse(expression);
-		Image<T> result = (Image<T>) parser.evaluate(root_node);
-		LocalizableCursor<T> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> ca = image_A.createLocalizableByDimCursor(); 
-		LocalizableByDimCursor<UnsignedShortType> cb = image_B.createLocalizableByDimCursor(); 
+		Img<T> result = (Img<T>) parser.evaluate(root_node);
+		Cursor<T> rc = result.localizingCursor();
+		RandomAccess<UnsignedShortType> ca = image_A.randomAccess(); 
+		RandomAccess<UnsignedShortType> cb = image_B.randomAccess(); 
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
 				cb.setPosition(rc);
-				assertEquals(1.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(1.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			rc.close();
-			ca.close();
 		}
 
 		// Right-singleton expansion
 		expression = "A || 0"; // will be true if A is non zero
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(ca.getType().getRealFloat()!=0f? 1.0f:0.0f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(ca.get().getRealFloat()!=0f? 1.0f:0.0f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 			
 		// Left-singleton expansion
 		expression = "1 || A"; // always true
 		root_node = parser.parse(expression);
-		result = (Image<T>) parser.evaluate(root_node);
-		rc = result.createLocalizableCursor();
-		ca = image_A.createLocalizableByDimCursor();
+		result = (Img<T>) parser.evaluate(root_node);
+		rc = result.localizingCursor();
+		ca = image_A.randomAccess();
 		try {
 			while (rc.hasNext()) {
 				rc.fwd();
 				ca.setPosition(rc);
-				assertEquals(1f, rc.getType().getRealFloat(), Float.MIN_VALUE);
+				assertEquals(1f, rc.get().getRealFloat(), Float.MIN_VALUE);
 			}
 		} catch (AssertionError ae) {
 			System.out.println("Assertion failed on "+expression+" with result:");
 			echoImage(result, System.out);
 			throw (ae);
 		} finally {
-			ca.close();
-			rc.close();
 		}
 		
 		// Numbers 
@@ -988,9 +915,10 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 	 * UTILS
 	 */
 	
-	public static final <T extends RealType<T>> void echoImage(Image<T> img, PrintStream logger) {
-		LocalizableByDimCursor<T> lc = img.createLocalizableByDimCursor();
-		int[] dims = lc.getDimensions();
+	public static final <T extends RealType<T>> void echoImage(Img<T> img, PrintStream logger) {
+		RandomAccess<T> lc = img.randomAccess();
+		long[] dims = new long[img.numDimensions()];
+		img.dimensions(dims);
 		
 		logger.append(img.toString() + "\n");
 		logger.append("        ");
@@ -1006,11 +934,10 @@ public class TestTwoOperandsPixelBasedOperators <T extends RealType<T>>{
 			logger.append(String.format("%2d.  -  ", j) );				
 			for (int i =0; i<dims[0]; i++) {
 				lc.setPosition(i, 0);
-				logger.append(String.format("%7.1f", lc.getType().getRealFloat()));				
+				logger.append(String.format("%7.1f", lc.get().getRealFloat()));				
 			}
 			logger.append('\n');
 		}
-		lc.close();
 		
 	}
 

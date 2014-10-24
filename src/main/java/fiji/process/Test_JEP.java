@@ -4,17 +4,18 @@ import fiji.expressionparser.ImgLibParser;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.ImagePlusAdapter;
-import mpicbg.imglib.image.display.imagej.ImageJFunctions;
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.img.ImagePlusAdapter;
+import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 
 import org.nfunk.jep.Node;
 import org.nfunk.jep.ParseException;
 
 public class Test_JEP {
 
-	public static <T extends RealType<T>> void main(String[] args) {
+	public static <T extends RealType<T> & NativeType<T>> void main(String[] args) {
 		System.out.println("Testing JEP extension");
 		
 //		System.out.println("\nLoading image");
@@ -25,7 +26,7 @@ public class Test_JEP {
 		float[] px = (float[]) imp.getStack().getPixels(16);
 		px[128*128/2+64] = 1e3f;
 
-		Image<T> img = ImagePlusAdapter.wrap(imp);
+		Img<T> img = ImagePlusAdapter.<T>wrap(imp);
 		imp.show();
 
 		float max = Float.NEGATIVE_INFINITY;
@@ -68,10 +69,10 @@ public class Test_JEP {
 				Node root_node = parser.parse(expression);
 
 				System.out.flush();
-				Image<?> result = (Image<?>) parser.evaluate(root_node);
+				Img<?> result = (Img<?>) parser.evaluate(root_node);
 				System.out.println("Checking for errors: "+parser.getErrorInfo());		
 				System.out.println("Resut is: "+result);		
-				ImagePlus target_imp = ImageJFunctions.copyToImagePlus(result);
+				ImagePlus target_imp = ImageJFunctions.show((Img)result);
 				target_imp.show();
 
 				max = Float.NEGATIVE_INFINITY;

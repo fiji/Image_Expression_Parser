@@ -2,11 +2,11 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
-import mpicbg.imglib.algorithm.floydsteinberg.FloydSteinbergDithering;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.logic.BitType;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.algorithm.floydsteinberg.FloydSteinbergDithering;
+import net.imglib2.img.Img;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -36,12 +36,12 @@ public class ImgLibDithering <T extends RealType<T>> extends PostfixMathCommand 
 		
 		// Deal with 1 or 2 parameters
 		FloydSteinbergDithering<T> dither = null;
-		Image<T> img;
+		Img<T> img;
 		if (curNumberOfParameters == 1) {
 			Object param = stack.pop();
 			
-			if (param instanceof Image<?>) {
-				img = (Image) param;
+			if (param instanceof Img<?>) {
+				img = (Img) param;
 			} else {
 				throw new ParseException("In function "+getFunctionString()
 						+": First argument must be an image, got a "+param.getClass().getSimpleName());
@@ -54,8 +54,8 @@ public class ImgLibDithering <T extends RealType<T>> extends PostfixMathCommand 
 			Object param2 = stack.pop();
 			Object param1 = stack.pop();
 
-			if (param1 instanceof Image<?>) {
-				img = (Image) param1;
+			if (param1 instanceof Img<?>) {
+				img = (Img) param1;
 			} else {
 				throw new ParseException("In function "+getFunctionString()
 						+": First argument must be an image, got a "+param1.getClass().getSimpleName());
@@ -72,8 +72,11 @@ public class ImgLibDithering <T extends RealType<T>> extends PostfixMathCommand 
 
 		// Process
 		dither.process();
-		Image<BitType> result = dither.getResult();
-		Image<FloatType> float_result = ImgLibUtils.copyToFloatTypeImage(result); // we return result as a float image 
+		Img<BitType> result = dither.getResult();
+		if (result == null) {
+			throw new RuntimeException("Floyd-Steinberg dithering unfortunately not available with this version of ImgLib2!");
+		}
+		Img<FloatType> float_result = ImgLibUtils.copyToFloatTypeImage(result); // we return result as a float image 
 		stack.push(float_result);		
 	}
 

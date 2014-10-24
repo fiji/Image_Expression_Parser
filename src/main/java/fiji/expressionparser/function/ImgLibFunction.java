@@ -2,7 +2,7 @@ package fiji.expressionparser.function;
 
 import org.nfunk.jep.function.PostfixMathCommandI;
 
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.type.numeric.RealType;
 
 public interface ImgLibFunction <T extends RealType<T>> extends PostfixMathCommandI {
 

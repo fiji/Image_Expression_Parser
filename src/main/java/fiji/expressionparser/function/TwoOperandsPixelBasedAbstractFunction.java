@@ -2,13 +2,13 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
-import mpicbg.imglib.cursor.Cursor;
-import mpicbg.imglib.cursor.LocalizableByDimCursor;
-import mpicbg.imglib.cursor.LocalizableCursor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.ImageFactory;
-import mpicbg.imglib.type.numeric.real.FloatType;
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.RealType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -24,16 +24,16 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 		Object param1 = inStack.pop();
 		Object result = null;
 
-		if (param1 instanceof Image<?>) {
+		if (param1 instanceof Img<?>) {
 			
-			if (param2 instanceof Image<?>) {
-				result = evaluate((Image)param1, (Image)param2);
+			if (param2 instanceof Img<?>) {
+				result = evaluate((Img)param1, (Img)param2);
 			} else if (param2 instanceof RealType) {
 				FloatType t2 = (FloatType)param2;
-				result = evaluate((Image)param1, t2);
+				result = evaluate((Img)param1, t2);
 			} else if (param2 instanceof Double) {
 				FloatType t2 = new FloatType(((Double)param2).floatValue());
-				result = evaluate((Image)param1, t2);
+				result = evaluate((Img)param1, t2);
 			} else {
 				throw new ParseException("In function '" + getFunctionString()
 						+"': Bad type of operand 2: "+param2.getClass().getSimpleName() );
@@ -43,8 +43,8 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 
 			FloatType t1 = (FloatType)param1;
 			
-			if (param2 instanceof Image<?>) {
-				result = evaluate(t1, (Image)param2);
+			if (param2 instanceof Img<?>) {
+				result = evaluate(t1, (Img)param2);
 			} else if (param2 instanceof RealType) {
 				FloatType t2 = (FloatType)param2;
 				result = new FloatType(evaluate(t1, t2)); // since it is pixel based, this must be a singleton
@@ -68,44 +68,40 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 	 * @param img2  The second image 
 	 * @return  The resulting image
 	 */
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img1, final Image<R> img2) throws ParseException {
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img1, final Img<R> img2) throws ParseException {
 		
 		// Create target image
-		Image<FloatType> result = new ImageFactory<FloatType>(new FloatType(), img1.getContainerFactory())
-			.createImage(img1.getDimensions(), String.format("%s %s %s", img1.getName(), getFunctionString(), img2.getName()));
+		final long[] dimensions = new long[img1.numDimensions()];
+		img1.dimensions(dimensions);
+		Img<FloatType> result = new ArrayImgFactory<FloatType>()
+			.create(dimensions, new FloatType());
 		
 		// Check if all Containers are compatibles
-		boolean compatible_containers = img1.getContainer().compareStorageContainerCompatibility(img2.getContainer());
+		boolean compatible_containers = img1.equalIterationOrder(img2);
 		
 		if (compatible_containers) {
 			
-			Cursor<R> c1 = img1.createCursor();
-			Cursor<R> c2 = img2.createCursor();
-			Cursor<FloatType> rc = result.createCursor();
+			Cursor<R> c1 = img1.cursor();
+			Cursor<R> c2 = img2.cursor();
+			Cursor<FloatType> rc = result.cursor();
 			while (c1.hasNext()) {
 				c1.fwd();
 				c2.fwd();
 				rc.fwd();
-				rc.getType().set( evaluate(c1.getType(), c2.getType()) );
+				rc.get().set( evaluate(c1.get(), c2.get()) );
 			}
-			c1.close();
-			c2.close();
-			rc.close();
 			
 		} else {
 			
-			LocalizableCursor<FloatType> rc = result.createLocalizableCursor();
-			LocalizableByDimCursor<R> c1 = img1.createLocalizableByDimCursor();
-			LocalizableByDimCursor<R> c2 = img2.createLocalizableByDimCursor();
+			Cursor<FloatType> rc = result.localizingCursor();
+			RandomAccess<R> c1 = img1.randomAccess();
+			RandomAccess<R> c2 = img2.randomAccess();
 			while (rc.hasNext()) {
 				rc.fwd();
 				c1.setPosition(rc);
 				c2.setPosition(rc);
-				rc.getType().set( evaluate(c1.getType(), c2.getType()) );
+				rc.get().set( evaluate(c1.get(), c2.get()) );
 			}
-			c1.close();
-			c2.close();
-			rc.close();
 			
 		}
 		
@@ -119,21 +115,21 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 	 * @param alpha  The number to do singleton expansion on 
 	 * @return  The resulting image 
 	 */
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img, final R alpha) throws ParseException {
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img, final R alpha) throws ParseException {
 		// Create target image
-		Image<FloatType> result = new ImageFactory<FloatType>(new FloatType(), img.getContainerFactory())
-			.createImage(img.getDimensions(), String.format("%.1f %s %s", alpha.getRealFloat(), getFunctionString(), img.getName()) );
+		final long[] dimensions = new long[img.numDimensions()];
+		img.dimensions(dimensions);
+		Img<FloatType> result = new ArrayImgFactory<FloatType>()
+			.create(dimensions, new FloatType());
 		
-		Cursor<R> ic = img.createCursor();
-		Cursor<FloatType> rc = result.createCursor();
+		Cursor<R> ic = img.cursor();
+		Cursor<FloatType> rc = result.cursor();
 		
 		while (rc.hasNext()) {
 			rc.fwd();
 			ic.fwd();
-			rc.getType().set(evaluate(ic.getType(), alpha));
+			rc.get().set(evaluate(ic.get(), alpha));
 		}
-		rc.close();
-		ic.close();
 				
 		return result;
 	}
@@ -145,21 +141,21 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 	 * @param alpha  The number to do singleton expansion on 
 	 * @return  The resulting image 
 	 */
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final R alpha, final Image<R> img) throws ParseException {
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final R alpha, final Img<R> img) throws ParseException {
 		// Create target image
-		Image<FloatType> result = new ImageFactory<FloatType>(new FloatType(), img.getContainerFactory())
-			.createImage(img.getDimensions(), String.format("%.1f %s %s", alpha.getRealFloat(), getFunctionString(), img.getName()) );
+		final long[] dimensions = new long[img.numDimensions()];
+		img.dimensions(dimensions);
+		Img<FloatType> result = new ArrayImgFactory<FloatType>()
+			.create(dimensions, new FloatType());
 		
-		Cursor<R> ic = img.createCursor();
-		Cursor<FloatType> rc = result.createCursor();
+		Cursor<R> ic = img.cursor();
+		Cursor<FloatType> rc = result.cursor();
 		
 		while (rc.hasNext()) {
 			rc.fwd();
 			ic.fwd();
-			rc.getType().set(evaluate(alpha, ic.getType()));
+			rc.get().set(evaluate(alpha, ic.get()));
 		}
-		rc.close();
-		ic.close();
 				
 		return result;
 	}

@@ -1,6 +1,6 @@
 package fiji.expressionparser.function;
 
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.type.numeric.RealType;
 
 public final class ImgLibAdd <T extends RealType<T>> extends TwoOperandsPixelBasedAbstractFunction<T> {
 

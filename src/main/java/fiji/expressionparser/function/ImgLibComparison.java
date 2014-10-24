@@ -2,7 +2,7 @@ package fiji.expressionparser.function;
 
 import org.nfunk.jep.ParseException;
 
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.type.numeric.RealType;
 
 public final class ImgLibComparison  {
 

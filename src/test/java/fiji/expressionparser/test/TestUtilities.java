@@ -1,26 +1,26 @@
 package fiji.expressionparser.test;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import mpicbg.imglib.container.array.ArrayContainerFactory;
-import mpicbg.imglib.cursor.Cursor;
-import mpicbg.imglib.cursor.LocalizableByDimCursor;
-import mpicbg.imglib.cursor.LocalizableCursor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.ImageFactory;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.integer.UnsignedShortType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.Node;
 import org.nfunk.jep.ParseException;
 
 import fiji.expressionparser.ImgLibParser;
+import fiji.expressionparser.ImgLibUtils;
 
 public class TestUtilities <T extends RealType<T>> {
 	
@@ -28,44 +28,41 @@ public class TestUtilities <T extends RealType<T>> {
 	private final static int HEIGHT = 9;
 	private final static float ERROR_TOLERANCE = 1e-6f;
 	/** 16-bit image */
-	public static Image<UnsignedShortType> image_A, image_B; 
+	public static Img<UnsignedShortType> image_A, image_B; 
 	static {	
 		// Create source images
-		ArrayContainerFactory cfact = new ArrayContainerFactory();
 		UnsignedShortType type = new UnsignedShortType();
-		ImageFactory<UnsignedShortType> ifact = new ImageFactory<UnsignedShortType>(type, cfact);
+		ImgFactory<UnsignedShortType> ifact = new ArrayImgFactory<UnsignedShortType>();
 		
-		image_A = ifact.createImage(new int[] {WIDTH, HEIGHT}, "A");
-		image_B = ifact.createImage(new int[] {WIDTH, HEIGHT}, "B");
+		image_A = ifact.create(new int[] {WIDTH, HEIGHT}, type);
+		image_B = ifact.create(new int[] {WIDTH, HEIGHT}, type);
 		
-		LocalizableCursor<UnsignedShortType> ca = image_A.createLocalizableCursor();
-		LocalizableByDimCursor<UnsignedShortType> cb = image_B.createLocalizableByDimCursor();
+		Cursor<UnsignedShortType> ca = image_A.localizingCursor();
+		RandomAccess<UnsignedShortType> cb = image_B.randomAccess();
 
-		int[] pos = ca.createPositionArray();
+		long[] pos = new long[ca.numDimensions()];
 		while (ca.hasNext()) {
 			ca.fwd();
-			ca.getPosition(pos);
+			ca.localize(pos);
 			cb.setPosition(ca);
-			ca.getType().set( pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1]) );
-			cb.getType().set( 256 - (pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1]) ) );
+			ca.get().set( (int)(pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1])) );
+			cb.get().set( (int)(256 - (pos[0] * (WIDTH-1-pos[0]) * pos[1] * (HEIGHT-1-pos[1]) )) );
 		}
-		ca.close();
-		cb.close();
 	}
 	
 	
 	public static interface ExpectedExpression {
-		public <T extends RealType<T>> float getExpectedValue(final Map<String, LocalizableByDimCursor<T>> cursors);
+		public <T extends RealType<T>> float getExpectedValue(final Map<String, RandomAccess<T>> cursors);
 	}
 	
 	
-	public static final <T extends RealType<T>> void doTest(String expression, Map<String, Image<T>> source_map, ExpectedExpression ee) throws ParseException {
+	public static final <T extends RealType<T>> void doTest(String expression, Map<String, Img<T>> source_map, ExpectedExpression ee) throws ParseException {
 		// Get result
-		Image<FloatType> result = getEvaluationResult(expression, source_map);
+		Img<FloatType> result = getEvaluationResult(expression, source_map);
 		// Prepare expected image		
-		Image<FloatType> expected = buildExpectedImage(source_map, ee);		
+		Img<FloatType> expected = buildExpectedImage(source_map, ee);		
 		// Compare
-		Image<FloatType> error = buildErrorImage(expected, result);
+		Img<FloatType> error = buildErrorImage(expected, result);
 		boolean passed = checkErrorImage(error);
 		try {
 			assertTrue(passed);		
@@ -87,7 +84,7 @@ public class TestUtilities <T extends RealType<T>> {
 	}
 		
 	@SuppressWarnings("unchecked")
-	public static final <T extends RealType<T>> Image<FloatType> getEvaluationResult(final String expression, final Map<String, Image<T>> source_map) throws ParseException {
+	public static final <T extends RealType<T>> Img<FloatType> getEvaluationResult(final String expression, final Map<String, Img<T>> source_map) throws ParseException {
 		ImgLibParser<T>  parser = new ImgLibParser<T>();
 		parser.addStandardFunctions();
 		parser.addImgLibAlgorithms();
@@ -95,20 +92,21 @@ public class TestUtilities <T extends RealType<T>> {
 			parser.addVariable(key, source_map.get(key));
 		}
 		Node root_node = parser.parse(expression);
-		Image<FloatType> result = (Image<FloatType>) parser.evaluate(root_node);
-		result.setName(expression);
+		Img<FloatType> result = (Img<FloatType>) parser.evaluate(root_node);
 		return result;
 	}
 	
-	public static final <T extends RealType<T>> Image<FloatType> buildExpectedImage(final Map<String, Image<T>> source_map, final ExpectedExpression expression) {
-		Image<T> source = source_map.get(source_map.keySet().toArray()[0]);
-		Image<FloatType> expected = new ImageFactory<FloatType>(new FloatType(), source.getContainerFactory())
-			.createImage(source.getDimensions(), "Expected image");
+	public static final <T extends RealType<T>> Img<FloatType> buildExpectedImage(final Map<String, Img<T>> source_map, final ExpectedExpression expression) {
+		Img<T> source = source_map.get(source_map.keySet().toArray()[0]);
+		long[] dimensions = new long[source.numDimensions()];
+		source.dimensions(dimensions);
+		Img<FloatType> expected = new ArrayImgFactory<FloatType>()
+			.create(dimensions, new FloatType());
 		// Prepare cursors
-		LocalizableCursor<FloatType> ec = expected.createLocalizableCursor();
-		Map<String, LocalizableByDimCursor<T>> cursor_map = new HashMap<String, LocalizableByDimCursor<T>>(source_map.size());
+		Cursor<FloatType> ec = expected.localizingCursor();
+		Map<String, RandomAccess<T>> cursor_map = new HashMap<String, RandomAccess<T>>(source_map.size());
 		for ( String key : source_map.keySet()) {
-			cursor_map.put(key, source_map.get(key).createLocalizableByDimCursor());
+			cursor_map.put(key, source_map.get(key).randomAccess());
 		}
 		// Set target value by looping over pixels
 		while (ec.hasNext()) {
@@ -116,53 +114,44 @@ public class TestUtilities <T extends RealType<T>> {
 			for (String key : cursor_map.keySet()) {
 				cursor_map.get(key).setPosition(ec);
 			}
-			ec.getType().set(expression.getExpectedValue(cursor_map));
+			ec.get().set(expression.getExpectedValue(cursor_map));
 		}		
-		// Close cursors
-		ec.close();
-		for (String key : cursor_map.keySet()) {
-			cursor_map.get(key).close();
-		}
 		// Return
 		return expected;		
 	}
 		
-	public static final Image<FloatType> buildErrorImage(Image<FloatType> expected, Image<FloatType> actual) {
-		Image<FloatType> result = expected.createNewImage();
-		result.setName("Error on "+actual.getName());
-		LocalizableCursor<FloatType> rc = result.createLocalizableCursor();
-		LocalizableByDimCursor<FloatType> ec = expected.createLocalizableByDimCursor();
-		LocalizableByDimCursor<FloatType> ac = actual.createLocalizableByDimCursor();
+	public static final Img<FloatType> buildErrorImage(Img<FloatType> expected, Img<FloatType> actual) {
+		Img<FloatType> result = ImgLibUtils.copyToFloatTypeImage(expected);
+		Cursor<FloatType> rc = result.localizingCursor();
+		RandomAccess<FloatType> ec = expected.randomAccess();
+		RandomAccess<FloatType> ac = actual.randomAccess();
 		while (rc.hasNext()) {
 			rc.fwd();
 			ec.setPosition(rc);
 			ac.setPosition(rc);
-			rc.getType().set(Math.abs(ec.getType().get()- ac.getType().get()));
+			rc.get().set(Math.abs(ec.get().get()- ac.get().get()));
 		}
-		rc.close();
-		ac.close();
-		ec.close();		
 		return result;
 	}
 	
-	public static final boolean checkErrorImage(Image<FloatType> error) {
+	public static final boolean checkErrorImage(Img<FloatType> error) {
 		boolean ok = true;
-		Cursor<FloatType> c = error.createCursor();
+		Cursor<FloatType> c = error.cursor();
 		while (c.hasNext()) {
 			c.fwd();
-			if (c.getType().get() > ERROR_TOLERANCE) {
+			if (c.get().get() > ERROR_TOLERANCE) {
 				ok = false;
 				break;
 			}
 		}
-		c.close();		
 		return ok;
 	}
 	
 	
-	public static final <T extends RealType<T>> void echoImage(Image<T> img, PrintStream logger) {
-		LocalizableByDimCursor<T> lc = img.createLocalizableByDimCursor();
-		int[] dims = lc.getDimensions();
+	public static final <T extends RealType<T>> void echoImage(Img<T> img, PrintStream logger) {
+		RandomAccess<T> lc = img.randomAccess();
+		long[] dims = new long[img.numDimensions()];
+		img.dimensions(dims);
 
 		logger.append(img.toString() + "\n");
 		logger.append("        ");
@@ -177,12 +166,10 @@ public class TestUtilities <T extends RealType<T>> {
 			logger.append(String.format("%2d.  -  ", j) );				
 			for (int i =0; i<dims[0]; i++) {
 				lc.setPosition(i, 0);
-				logger.append(String.format("%10.1e", lc.getType().getRealFloat()));				
+				logger.append(String.format("%10.1e", lc.get().getRealFloat()));				
 			}
 			logger.append('\n');
 		}
-
-		lc.close();
 
 	}
 	

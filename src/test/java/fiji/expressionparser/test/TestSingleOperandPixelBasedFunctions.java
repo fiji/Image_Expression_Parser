@@ -6,10 +6,10 @@ import static fiji.expressionparser.test.TestUtilities.image_A;
 import java.util.HashMap;
 import java.util.Map;
 
-import mpicbg.imglib.cursor.LocalizableByDimCursor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.integer.UnsignedShortType;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 import org.junit.Test;
 import org.nfunk.jep.ParseException;
@@ -18,9 +18,9 @@ import fiji.expressionparser.test.TestUtilities.ExpectedExpression;
 
 public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 
-	private Map<String, Image<UnsignedShortType>> source_map; 
+	private Map<String, Img<UnsignedShortType>> source_map; 
 	{
-		source_map = new HashMap<String, Image<UnsignedShortType>>();
+		source_map = new HashMap<String, Img<UnsignedShortType>>();
 		source_map.put("A", image_A);
 	}
 	
@@ -29,9 +29,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "abs(A)" ;
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return Math.abs(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return Math.abs(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -41,9 +41,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "acos(A)" ;
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.acos(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.acos(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -54,9 +54,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "asin(A)" ;
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.asin(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.asin(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -67,9 +67,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "atan(A)" ;
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.atan(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.atan(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -80,9 +80,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "ceil(A/3)" ; // to generate non even numbers
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.ceil(cursor.getType().getRealFloat()/3);
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.ceil(cursor.get().getRealFloat()/3);
 			}
 		});
 	}
@@ -93,9 +93,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "cos(A)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.cos(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.cos(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -106,9 +106,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "exp(A)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.exp(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.exp(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -119,9 +119,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "floor(A/3)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.floor(cursor.getType().getRealFloat()/3);
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.floor(cursor.get().getRealFloat()/3);
 			}
 		});
 	}
@@ -132,9 +132,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "log(A)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.log(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.log(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -145,9 +145,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "round(A/3)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.round(cursor.getType().getRealFloat()/3);
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.round(cursor.get().getRealFloat()/3);
 			}
 		});
 	}
@@ -158,9 +158,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "sin(A)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.sin(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.sin(cursor.get().getRealFloat());
 			}
 		});
 	}
@@ -171,9 +171,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "sqrt(A-100)" ;  // we want NaNs
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.sqrt(cursor.getType().getRealFloat()-100);
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.sqrt(cursor.get().getRealFloat()-100);
 			}
 		});
 	}
@@ -184,9 +184,9 @@ public class TestSingleOperandPixelBasedFunctions  <T extends RealType<T>>  {
 		String expression = "tan(A)" ; 
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return (float) Math.tan(cursor.getType().getRealFloat());
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return (float) Math.tan(cursor.get().getRealFloat());
 			}
 		});
 	}

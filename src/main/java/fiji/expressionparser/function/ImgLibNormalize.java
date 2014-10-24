@@ -1,11 +1,12 @@
 package fiji.expressionparser.function;
 
-import mpicbg.imglib.algorithm.math.NormalizeImageFloat;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
+
+import fiji.expressionparser.ImgLibUtils;
 
 public final class ImgLibNormalize <T extends RealType<T>> extends SingleOperandAbstractFunction<T> {
 
@@ -14,14 +15,14 @@ public final class ImgLibNormalize <T extends RealType<T>> extends SingleOperand
 	}
 	
 	@Override
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img) throws ParseException {
-		NormalizeImageFloat<R> normalizer = new NormalizeImageFloat<R>(img); 
-		normalizer.process();
-		return normalizer.getResult();
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img) throws ParseException {
+		Img<FloatType> fimg = ImgLibUtils.copyToFloatTypeImage(img);
+		normalize(fimg);
+		return fimg;
 	}
 
 	@Override
-	public <R extends RealType<R>> Image<FloatType> evaluate(R alpha) throws ParseException {
+	public <R extends RealType<R>> Img<FloatType> evaluate(R alpha) throws ParseException {
 		throw new ParseException("In function "+getFunctionString()
 				+": Normalizing is not defined on scalars.");
 	}
@@ -38,6 +39,17 @@ public final class ImgLibNormalize <T extends RealType<T>> extends SingleOperand
 	@Override
 	public String getFunctionString() {
 		return "normalize";
+	}
+
+	private void normalize(Img<FloatType> fimg) {
+		double total = 0;
+		for (FloatType type : fimg) {
+			total += type.getRealDouble();
+		}
+		if (total == 0 || total == 1) return;
+		for (FloatType type : fimg) {
+			type.setReal(type.getRealDouble() / total);
+		}
 	}
 
 }

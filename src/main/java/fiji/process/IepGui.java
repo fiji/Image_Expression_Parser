@@ -1,10 +1,10 @@
 package fiji.process;
 
+import fiji.expressionparser.ImgLibParser;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.WindowManager;
 import ij.plugin.RGBStackMerge;
 import ij.plugin.filter.RGBStackSplitter;
@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,11 +40,10 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.display.imagej.ImageJFunctions;
-import mpicbg.imglib.type.numeric.RealType;
-
-import fiji.expressionparser.ImgLibParser;
+import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 
 /**
  * <h2>GUI for the plugin {@link Image_Expression_Parser}</h2>
@@ -75,7 +75,7 @@ import fiji.expressionparser.ImgLibParser;
  * This GUI was built in part using Jigloo GUI builder http://www.cloudgarden.com/jigloo/.
  * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>, Albert Cardona <acardona@ini.phys.ethz.ch>
  */
-public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implements ImageListener, WindowListener {
+public class IepGui <T extends RealType<T> & NativeType<T>> extends javax.swing.JFrame implements ImageListener, WindowListener {
 	/*
 	 * FIELDS
 	 */
@@ -235,7 +235,7 @@ public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implement
 	/**
 	 * Main method for debug
 	 */
-	public static <T extends RealType<T>> void main(String[] args) {
+	public static <T extends RealType<T> & NativeType<T>> void main(String[] args) {
 		// Launch the GUI
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -625,7 +625,7 @@ public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implement
 					// Prepare parser
 					image_expression_parser.setExpression(expression);
 
-					Image<T> result_img = null;
+					Img<T> result_img = null;
 
 					// Here, we check if we get a RGB image. They are handled in a special way: 
 					// They are converted to 3 8-bit images which are processed separately, and
@@ -662,9 +662,9 @@ public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implement
 						
 						
 						// Have the parser process individual channel separately
-						Map<String, Image<T>> img_map;
+						Map<String, Img<T>> img_map;
 						ImagePlus[] result_array = new ImagePlus[3];
-						Image<T> tmp_image;
+						Img<T> tmp_image;
 						int index = 0;
 						for (Map<String, ImagePlus> current_map : map_array) {
 							img_map = image_expression_parser.convertToImglib(current_map);
@@ -672,7 +672,7 @@ public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implement
 							image_expression_parser.process();
 							// Collect results
 							tmp_image = image_expression_parser.getResult();
-							result_array[index] = ImageJFunctions.copyToImagePlus(tmp_image);
+							result_array[index] = ImageJFunctions.show(tmp_image);
 							index++;
 						}
 						
@@ -703,7 +703,7 @@ public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implement
 					} else {
 
 
-						Map<String, Image<T>> img_map = image_expression_parser.convertToImglib(imp_map);
+						Map<String, Img<T>> img_map = image_expression_parser.convertToImglib(imp_map);
 						image_expression_parser.setImageMap(img_map);
 						// Call calculation
 						if (!image_expression_parser.process()) {
@@ -714,10 +714,10 @@ public class IepGui <T extends RealType<T>> extends javax.swing.JFrame implement
 						result_img = image_expression_parser.getResult();
 
 						if (target_imp == null) {
-							target_imp = ImageJFunctions.copyToImagePlus(result_img);
+							target_imp = ImageJFunctions.show(result_img);
 							target_imp.show();
 						} else {
-							ImagePlus new_imp = ImageJFunctions.copyToImagePlus(result_img);
+							ImagePlus new_imp = ImageJFunctions.show(result_img);
 							if (!target_imp.isVisible()) {
 								target_imp = new_imp;
 								target_imp.show();
