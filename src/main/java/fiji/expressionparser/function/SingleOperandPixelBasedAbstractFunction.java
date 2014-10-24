@@ -2,11 +2,12 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
-import mpicbg.imglib.cursor.Cursor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.ImageFactory;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.Cursor;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -21,9 +22,9 @@ public abstract class SingleOperandPixelBasedAbstractFunction <T extends RealTyp
 		Object param = inStack.pop();
 		Object result = null;
 
-		if (param instanceof Image<?>) {
+		if (param instanceof Img<?>) {
 			
-				result = evaluate((Image)param);
+				result = evaluate((Img)param);
 		
 		} else if (param instanceof RealType) {
 
@@ -40,27 +41,27 @@ public abstract class SingleOperandPixelBasedAbstractFunction <T extends RealTyp
 	}
 
 	/**
-	 * Return an ImgLib {@link Image} of {@link FloatType}, where every pixel is the function
+	 * Return an ImgLib {@link Img} of {@link FloatType}, where every pixel is the function
 	 * applied on the corresponding pixel of the source image.
 	 * @param img  The source image 
 	 * @return  The resulting image 
 	 * @throws ParseException 
 	 */	
-	public final Image<FloatType> evaluate(final Image<T> img) throws ParseException {
+	public final Img<FloatType> evaluate(final Img<T> img) throws ParseException {
 		// Create target image
-		Image<FloatType> result = new ImageFactory<FloatType>(new FloatType(), img.getContainerFactory())
-			.createImage(img.getDimensions(), String.format("%s(%s)", getFunctionString(), img.getName()) );
+		final long[] dimensions = new long[img.numDimensions()];
+		img.dimensions(dimensions);
+		Img<FloatType> result = new ArrayImgFactory<FloatType>()
+			.create(dimensions, new FloatType());
 
-		Cursor<T> ic = img.createCursor();
-		Cursor<FloatType> rc = result.createCursor();
+		Cursor<T> ic = img.cursor();
+		Cursor<FloatType> rc = result.cursor();
 
 		while (rc.hasNext()) {
 			rc.fwd();
 			ic.fwd();
-			rc.getType().set(evaluate(ic.getType()));
+			rc.get().set(evaluate(ic.get()));
 		}
-		rc.close();
-		ic.close();
 
 		return result;
 

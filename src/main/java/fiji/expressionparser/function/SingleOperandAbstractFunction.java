@@ -2,9 +2,9 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -19,9 +19,9 @@ public abstract class SingleOperandAbstractFunction <T extends RealType<T>> exte
 		Object param = inStack.pop();
 		Object result = null;
 
-		if (param instanceof Image<?>) {
+		if (param instanceof Img<?>) {
 			
-			Image<T> img = (Image) param;
+			Img<T> img = (Img) param;
 			result = evaluate(img);			
 		
 		} else if (param instanceof FloatType) {
@@ -38,21 +38,22 @@ public abstract class SingleOperandAbstractFunction <T extends RealType<T>> exte
 	}
 	
 	 /**
-	  * Evaluate this function on one ImgLib images. A new {@link Image} of {@link FloatType}  
+	  * Evaluate this function on one ImgLib images. A new {@link Img} of {@link FloatType}  
 	  * is returned, so as to avoid underflow and overflow problems on bounded types (e.g. ByeType).
 	  * @param img the image 
 	  * @return  The new resulting image
 	  */
-	 public abstract <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img) throws ParseException;
+	 public abstract <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img) throws ParseException;
 
 	 /**
 	  * Evaluate this function on a numeric {@link RealType} type. 
-	  * A new {@link Image} of {@link FloatType}  
+	  * A new {@link Img} of {@link FloatType}  
 	  * is returned, so as to avoid underflow and overflow problems on 
 	  * bounded types (e.g. ByeType). 
 	  * 
 	  * @param alpha the numeric type 
 	  * @return  The new resulting image
 	  */
-	 public abstract <R extends RealType<R>> Image<FloatType> evaluate(final R alpha) throws ParseException;	
+	 public abstract <R extends RealType<R>> Img<FloatType> evaluate(final R alpha) throws ParseException;
+
 }

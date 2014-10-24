@@ -1,6 +1,6 @@
 package fiji.expressionparser;
 
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.type.Complex;

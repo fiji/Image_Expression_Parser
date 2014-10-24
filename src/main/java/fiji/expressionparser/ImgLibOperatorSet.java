@@ -1,6 +1,6 @@
 package fiji.expressionparser;
 
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.type.numeric.RealType;
 
 import org.nfunk.jep.Operator;
 import org.nfunk.jep.OperatorSet;

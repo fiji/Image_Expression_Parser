@@ -11,11 +11,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import mpicbg.imglib.algorithm.OutputAlgorithm;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.image.ImagePlusAdapter;
-import mpicbg.imglib.image.display.imagej.ImageJFunctions;
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.algorithm.OutputAlgorithm;
+import net.imglib2.img.ImagePlusAdapter;
+import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 
 import org.nfunk.jep.Node;
 import org.nfunk.jep.ParseException;
@@ -52,14 +53,14 @@ import fiji.expressionparser.ImgLibParser;
  * It is possible to call the plugin from another class or in a scripting language. For instance in Python:
  * 
  * <pre>
- * import mpicbg.imglib.image.ImagePlusAdapter
+ * import net.imglib2.img.ImgPlusAdapter
  * import mpicbg.imglib.image.display.imagej.ImageJFunctions
  * import fiji.process.Image_Expression_Parser
  * 
  * 
  * # Make an ImgLib image from the current image
  * imp = WindowManager.getCurrentImage()
- * img = mpicbg.imglib.image.ImagePlusAdapter.wrap(imp)
+ * img = net.imglib2.img.ImgPlusAdapter.wrap(imp)
  * 
  * # In python, the map can be a dictionary, relating 
  * # variable names to images
@@ -103,15 +104,15 @@ import fiji.expressionparser.ImgLibParser;
  *   
  * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>, Albert Cardona <acardona@ini.phys.ethz.ch>
  */	
-public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, OutputAlgorithm<T> {
+public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> implements PlugIn, OutputAlgorithm<Img<T>> {
 	
 	protected boolean user_has_canceled = false;
 	/** Array of Imglib images, on which calculations will be done */
-	protected Map<String, Image<T>> image_map;
+	protected Map<String, Img<T>> image_map;
 	/** The expression to evaluate */
 	protected String expression;
 	/** Here is stored the result of the evaluation */
-	protected Image<T> result = null;
+	protected Img<T> result = null;
 	/** If an error occurred, an error message is put here	 */
 	protected String error_message = "";
 	
@@ -196,8 +197,7 @@ public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, O
 		
 		try {
 			Node root_node = parser.parse(expression);
-			result = (Image<T>) parser.evaluate(root_node);
-			result.setName(expression);
+			result = (Img<T>) parser.evaluate(root_node);
 			error_message = "";
 			return true;
 
@@ -220,7 +220,7 @@ public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, O
 	 * Return the result of the last evaluation of the expression over the images given.
 	 * Is <code>null</code> if {@link #process()} was not called before.
 	 */
-	public Image<T> getResult()  {
+	public Img<T> getResult()  {
 		return this.result;
 	}
 	
@@ -242,11 +242,11 @@ public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, O
 		return this.expression;
 	}
 	
-	public void setImageMap(Map<String, Image<T>> im) {
+	public void setImageMap(Map<String, Img<T>> im) {
 		this.image_map = im;
 	}
 	
-	public Map<String, Image<T>> getImageMap() {
+	public Map<String, Img<T>> getImageMap() {
 		return this.image_map;
 	}
 	
@@ -272,12 +272,16 @@ public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, O
 	 */
 	private boolean dimensionsAreValid() {
 		if (image_map.size() == 1) { return true; }
-		Collection<Image<T>> images = image_map.values();
-		Iterator<Image<T>> it = images.iterator();
-		int[] previous_dims = it.next().getDimensions();
-		int[] dims;
+		Collection<Img<T>> images = image_map.values();
+		Iterator<Img<T>> it = images.iterator();
+		Img<T> img = it.next();
+		long[] previous_dims = new long[img.numDimensions()];
+		img.dimensions(previous_dims);
+		long[] dims;
 		while (it.hasNext()) {
-			dims = it.next().getDimensions();
+			img = it.next();
+			dims = new long[img.numDimensions()];
+			img.dimensions(dims);
 			if (previous_dims.length != dims.length) { return false; }
 			for (int j = 0; j < dims.length; j++) {
 				if (dims[j] != previous_dims[j]) { return false; }
@@ -316,22 +320,22 @@ public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, O
 	}
 	
 	/**
-	 * Convert the <String ImagePlus> map in argument to a <String, {@link Image}> HasMap 
+	 * Convert the <String ImagePlus> map in argument to a <String, {@link Img}> HasMap 
 	 * and put it in the "{@link #image_map}" field.
 	 * <p>
-	 * The internals of this plugin operate on {@link Image}, but for integration within 
+	 * The internals of this plugin operate on {@link Img}, but for integration within 
 	 * current ImageJ, the GUI returns {@link ImagePlus}, so we have to do a conversion when 
 	 * we execute this plugin from ImageJ.
 	 * <p>
 	 * Warning: executing this method resets the {@link #image_map} field.
 	 * @param imp_map  the <String, ImagePlus> map to convert
 	 */
-	public Map<String, Image<T>> convertToImglib(Map<String, ImagePlus> imp_map) {
-		Map<String, Image<T>> map = new HashMap<String, Image<T>>(imp_map.size());
-		Image<T> img;
+	public Map<String, Img<T>> convertToImglib(Map<String, ImagePlus> imp_map) {
+		Map<String, Img<T>> map = new HashMap<String, Img<T>>(imp_map.size());
+		Img<T> img;
 		Set<String> variables = imp_map.keySet();
 		for (String var : variables) {
-			img = ImagePlusAdapter.wrap(imp_map.get(var));
+			img = ImagePlusAdapter.<T>wrap(imp_map.get(var));
 			map.put(var, img);
 		}
 		return map;
@@ -342,20 +346,20 @@ public class Image_Expression_Parser<T extends RealType<T>> implements PlugIn, O
 	 * MAIN METHOD
 	 */
 		
-	public static <T extends RealType<T>> void main(String[] args) {
+	public static <T extends RealType<T> & NativeType<T>> void main(String[] args) {
 		ImagePlus imp = IJ.openImage("http://rsb.info.nih.gov/ij/images/blobs.gif");
-		Image<T> img = ImagePlusAdapter.wrap(imp);
+		Img<T> img = ImagePlusAdapter.<T>wrap(imp);
 		imp.show();
 		
 		Image_Expression_Parser<T> iep = new Image_Expression_Parser<T>();
 		iep.setExpression("A^2");
-		HashMap<String, Image<T>> map = new HashMap<String, Image<T>>(1);
+		HashMap<String, Img<T>> map = new HashMap<String, Img<T>>(1);
 		map.put("A", img);
 		iep.setImageMap(map);
 		boolean everything_went_fine = iep.process();
-		Image<T> result = iep.getResult();
+		Img<T> result = iep.getResult();
 		if (everything_went_fine) {
-			ImagePlus result_imp = ImageJFunctions.copyToImagePlus(result);
+			ImagePlus result_imp = ImageJFunctions.show(result);
 
 			float max = Float.NEGATIVE_INFINITY;
 			float min = Float.POSITIVE_INFINITY;

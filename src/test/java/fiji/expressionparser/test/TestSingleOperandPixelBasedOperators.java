@@ -1,14 +1,15 @@
 package fiji.expressionparser.test;
 
-import static fiji.expressionparser.test.TestUtilities.*;
+import static fiji.expressionparser.test.TestUtilities.doTest;
+import static fiji.expressionparser.test.TestUtilities.image_A;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import mpicbg.imglib.cursor.LocalizableByDimCursor;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.integer.UnsignedShortType;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 import org.junit.Test;
 import org.nfunk.jep.ParseException;
@@ -17,9 +18,9 @@ import fiji.expressionparser.test.TestUtilities.ExpectedExpression;
 
 public class TestSingleOperandPixelBasedOperators  <T extends RealType<T>> {
 
-	private Map<String, Image<UnsignedShortType>> source_map; 
+	private Map<String, Img<UnsignedShortType>> source_map; 
 	{
-		source_map = new HashMap<String, Image<UnsignedShortType>>();
+		source_map = new HashMap<String, Img<UnsignedShortType>>();
 		source_map.put("A", image_A);
 	}
 
@@ -29,9 +30,9 @@ public class TestSingleOperandPixelBasedOperators  <T extends RealType<T>> {
 		String expression = "-A" ;
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				final LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return -cursor.getType().getRealFloat();
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				final RandomAccess<R> cursor = cursors.get("A");
+				return -cursor.get().getRealFloat();
 			}
 		});
 	}	
@@ -41,9 +42,9 @@ public class TestSingleOperandPixelBasedOperators  <T extends RealType<T>> {
 		String expression = "!A" ;
 		doTest(expression, source_map, new ExpectedExpression() {
 			@Override
-			public <R extends RealType<R>> float getExpectedValue(final Map<String, LocalizableByDimCursor<R>> cursors) {
-				LocalizableByDimCursor<R> cursor = cursors.get("A");
-				return cursor.getType().getRealFloat() == 0f ? 1.0f : 0.0f;
+			public <R extends RealType<R>> float getExpectedValue(final Map<String, RandomAccess<R>> cursors) {
+				RandomAccess<R> cursor = cursors.get("A");
+				return cursor.get().getRealFloat() == 0f ? 1.0f : 0.0f;
 			}
 		});
 	}	

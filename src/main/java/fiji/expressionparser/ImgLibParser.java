@@ -2,7 +2,7 @@ package fiji.expressionparser;
 
 import java.util.ArrayList;
 
-import mpicbg.imglib.type.numeric.RealType;
+import net.imglib2.type.numeric.RealType;
 
 import org.nfunk.jep.JEP;
 import org.nfunk.jep.type.NumberFactory;

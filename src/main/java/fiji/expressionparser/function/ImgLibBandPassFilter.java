@@ -2,10 +2,10 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
-import mpicbg.imglib.algorithm.fft.Bandpass;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.algorithm.fft.Bandpass;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -22,12 +22,12 @@ public class ImgLibBandPassFilter <T extends RealType<T>> extends PostfixMathCom
 		Object param3 = stack.pop();
 		Object param2 = stack.pop();
 		Object param1 = stack.pop();
-		Image<T> img;
+		Img<T> img;
 		int begin_radius, end_radius;
 		
 		// Check classes
-		if (param1 instanceof Image<?>) {
-			img = (Image) param1;
+		if (param1 instanceof Img<?>) {
+			img = (Img) param1;
 		} else {
 			throw new ParseException("In function '" + getFunctionString()
 						+"': First operand must be an image.");

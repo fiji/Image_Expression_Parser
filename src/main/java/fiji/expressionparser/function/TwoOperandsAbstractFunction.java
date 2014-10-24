@@ -2,9 +2,9 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -21,13 +21,13 @@ public abstract class TwoOperandsAbstractFunction <T extends RealType<T>> extend
 		Object param1 = inStack.pop();
 		Object result = null;
 
-		if (param1 instanceof Image<?>) {
+		if (param1 instanceof Img<?>) {
 			
-			if (param2 instanceof Image<?>) {
-				result = evaluate((Image)param1, (Image)param2);
+			if (param2 instanceof Img<?>) {
+				result = evaluate((Img)param1, (Img)param2);
 			} else if (param2 instanceof RealType) {
 				FloatType t2 = (FloatType) param2;
-				result = evaluate((Image)param1, t2);
+				result = evaluate((Img)param1, t2);
 			} else {
 				throw new ParseException("In function '" + getFunctionString()
 						+"': Bad type of operand 2: "+param2.getClass().getSimpleName() );
@@ -37,8 +37,8 @@ public abstract class TwoOperandsAbstractFunction <T extends RealType<T>> extend
 
 			FloatType t1 = (FloatType) param1;
 			
-			if (param2 instanceof Image<?>) {
-				result = evaluate(t1, (Image)param2);
+			if (param2 instanceof Img<?>) {
+				result = evaluate(t1, (Img)param2);
 			} else if (param2 instanceof FloatType) {
 				FloatType t2 = (FloatType) param2;
 				result = new FloatType(evaluate(t1, t2));
@@ -65,40 +65,40 @@ public abstract class TwoOperandsAbstractFunction <T extends RealType<T>> extend
 	 public abstract <R extends RealType<R>> float evaluate(final R t1, final R t2) throws ParseException;
 
 	 /**
-	  * Evaluate this function on two ImgLib images. A new {@link Image} of {@link FloatType}  
+	  * Evaluate this function on two ImgLib images. A new {@link Img} of {@link FloatType}  
 	  * is returned, so as to avoid underflow and overflow problems on bounded types (e.g. ByeType).
 	  * @param img1 the first image 
 	  * @param img2 the second image 
 	  * @return  The new resulting image
 	  */
-	 public abstract <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img1, final Image<R> img2) throws ParseException;
+	 public abstract <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img1, final Img<R> img2) throws ParseException;
 
 	 /**
 	  * Evaluate this function on an ImgLib images and a numeric {@link RealType} type,
-	  * right singleton expansion. A new {@link Image} of {@link FloatType}  
+	  * right singleton expansion. A new {@link Img} of {@link FloatType}  
 	  * is returned, so as to avoid underflow and overflow problems on 
 	  * bounded types (e.g. ByeType). This method should implement a singleton expansion
-	  * of the method {@link #evaluate(Image, Image)}, as meant by the implement
+	  * of the method {@link #evaluate(Img, Img)}, as meant by the implement
 	  * function.
 	  * 
 	  * @param img the image 
 	  * @param alpha the numeric type 
 	  * @return  The new resulting image
 	  */
-	 public abstract <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img, final R alpha) throws ParseException;
+	 public abstract <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img, final R alpha) throws ParseException;
 
 	 /**
 	  * Evaluate this function on an ImgLib images and a numeric {@link RealType} type,
-	  * left singleton expansion. A new {@link Image} of {@link FloatType}  
+	  * left singleton expansion. A new {@link Img} of {@link FloatType}  
 	  * is returned, so as to avoid underflow and overflow problems on 
 	  * bounded types (e.g. ByeType). This method should implement a singleton expansion
-	  * of the method {@link #evaluate(Image, Image)}, as meant by the implement
+	  * of the method {@link #evaluate(Img, Img)}, as meant by the implement
 	  * function.
 	  * 
 	  * @param img the image 
 	  * @param alpha the numeric type 
 	  * @return  The new resulting image
 	  */
-	 public abstract <R extends RealType<R>> Image<FloatType> evaluate(final R alpha, final Image<R> img) throws ParseException;
+	 public abstract <R extends RealType<R>> Img<FloatType> evaluate(final R alpha, final Img<R> img) throws ParseException;
 
 }

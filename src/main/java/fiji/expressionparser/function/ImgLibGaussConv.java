@@ -1,10 +1,12 @@
 package fiji.expressionparser.function;
 
-import mpicbg.imglib.algorithm.gauss.GaussianConvolution;
-import mpicbg.imglib.image.Image;
-import mpicbg.imglib.outofbounds.OutOfBoundsStrategyMirrorFactory;
-import mpicbg.imglib.type.numeric.RealType;
-import mpicbg.imglib.type.numeric.real.FloatType;
+
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.gauss3.Gauss3;
+import net.imglib2.exception.IncompatibleTypeException;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 
@@ -39,14 +41,16 @@ public final class ImgLibGaussConv <T extends RealType<T>> extends TwoOperandsAb
 	}
 
 	@Override
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img, final R alpha) throws ParseException {
-		Image<FloatType> fimg = ImgLibUtils.copyToFloatTypeImage(img);
-		OutOfBoundsStrategyMirrorFactory<FloatType> strategy = new OutOfBoundsStrategyMirrorFactory<FloatType>();
-		GaussianConvolution<FloatType> gaussian_fiter = new GaussianConvolution<FloatType>(fimg, strategy, alpha.getRealDouble());
-		gaussian_fiter.process();
-		Image<FloatType> result = gaussian_fiter.getResult();
-		result.setName("gauss("+img.getName()+", "+String.format("%.1f", alpha.getRealDouble())+")");
-		return result;
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img, final R alpha) throws ParseException {
+		RandomAccessibleInterval<FloatType> fimg = ImgLibUtils.copyToFloatTypeImage(img);
+		Gauss3 gaussian_fiter = new Gauss3();
+		try {
+			Gauss3.gauss(alpha.getRealDouble(), fimg, fimg);
+		}
+		catch (IncompatibleTypeException e) {
+			throw new RuntimeException(e);
+		}
+		return (Img<FloatType>)fimg;
 	}
 
 	@Override
@@ -56,13 +60,13 @@ public final class ImgLibGaussConv <T extends RealType<T>> extends TwoOperandsAb
 	}
 
 	@Override
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final Image<R> img1, final Image<R> img2) throws ParseException {
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img1, final Img<R> img2) throws ParseException {
 		throw new ParseException("In function "+getFunctionString()
 				+": Arguments must be one image and one number, got 2 images.");
 	}
 
 	@Override
-	public final <R extends RealType<R>> Image<FloatType> evaluate(final R alpha, Image<R> img) throws ParseException {
+	public final <R extends RealType<R>> Img<FloatType> evaluate(final R alpha, Img<R> img) throws ParseException {
 		throw new ParseException("In function "+getFunctionString()
 			+": First argument must be one image and second one a number, in this order.");
 	}
