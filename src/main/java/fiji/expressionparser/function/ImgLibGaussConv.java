@@ -7,6 +7,7 @@ import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
 
 import org.nfunk.jep.ParseException;
 
@@ -43,9 +44,8 @@ public final class ImgLibGaussConv <T extends RealType<T>> extends TwoOperandsAb
 	@Override
 	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img, final R alpha) throws ParseException {
 		RandomAccessibleInterval<FloatType> fimg = ImgLibUtils.copyToFloatTypeImage(img);
-		Gauss3 gaussian_fiter = new Gauss3();
 		try {
-			Gauss3.gauss(alpha.getRealDouble(), fimg, fimg);
+			Gauss3.gauss(alpha.getRealDouble(), Views.extendZero(fimg), fimg);
 		}
 		catch (IncompatibleTypeException e) {
 			throw new RuntimeException(e);
