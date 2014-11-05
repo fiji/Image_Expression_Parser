@@ -1,6 +1,8 @@
 package fiji.expressionparser.test;
 
 import static org.junit.Assert.assertEquals;
+import fiji.expressionparser.ImgLibOperatorSet;
+import fiji.expressionparser.ImgLibParser;
 
 import java.io.PrintStream;
 
@@ -18,9 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nfunk.jep.Node;
 import org.nfunk.jep.ParseException;
-
-import fiji.expressionparser.ImgLibOperatorSet;
-import fiji.expressionparser.ImgLibParser;
 
 /**
  * Test cases for parser functions that are part of the {@link ImgLibOperatorSet}. As

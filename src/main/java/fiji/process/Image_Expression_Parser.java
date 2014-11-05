@@ -1,5 +1,6 @@
 package fiji.process;
 
+import fiji.expressionparser.ImgLibParser;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
@@ -20,8 +21,6 @@ import net.imglib2.type.numeric.RealType;
 
 import org.nfunk.jep.Node;
 import org.nfunk.jep.ParseException;
-
-import fiji.expressionparser.ImgLibParser;
 
 /**
  * <h1>Image expression parser</h1>

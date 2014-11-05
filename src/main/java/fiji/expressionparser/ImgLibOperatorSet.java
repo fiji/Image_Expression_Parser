@@ -1,10 +1,5 @@
 package fiji.expressionparser;
 
-import net.imglib2.type.numeric.RealType;
-
-import org.nfunk.jep.Operator;
-import org.nfunk.jep.OperatorSet;
-
 import fiji.expressionparser.function.ImgLibAdd;
 import fiji.expressionparser.function.ImgLibComparison;
 import fiji.expressionparser.function.ImgLibDivide;
@@ -14,6 +9,10 @@ import fiji.expressionparser.function.ImgLibMultiply;
 import fiji.expressionparser.function.ImgLibPower;
 import fiji.expressionparser.function.ImgLibSubtract;
 import fiji.expressionparser.function.ImgLibUMinus;
+import net.imglib2.type.numeric.RealType;
+
+import org.nfunk.jep.Operator;
+import org.nfunk.jep.OperatorSet;
 
 public class ImgLibOperatorSet <T extends RealType<T>> extends OperatorSet {
 

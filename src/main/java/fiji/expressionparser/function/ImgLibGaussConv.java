@@ -1,6 +1,7 @@
 package fiji.expressionparser.function;
 
 
+import fiji.expressionparser.ImgLibUtils;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.exception.IncompatibleTypeException;
@@ -10,8 +11,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 
 import org.nfunk.jep.ParseException;
-
-import fiji.expressionparser.ImgLibUtils;
 
 public final class ImgLibGaussConv <T extends RealType<T>> extends TwoOperandsAbstractFunction<T> {
 

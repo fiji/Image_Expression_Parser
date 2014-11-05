@@ -1,12 +1,11 @@
 package fiji.expressionparser.function;
 
+import fiji.expressionparser.ImgLibUtils;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
-
-import fiji.expressionparser.ImgLibUtils;
 
 public final class ImgLibNormalize <T extends RealType<T>> extends SingleOperandAbstractFunction<T> {
 

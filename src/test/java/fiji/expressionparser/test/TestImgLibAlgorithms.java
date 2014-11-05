@@ -4,6 +4,7 @@ import static fiji.expressionparser.test.TestUtilities.doTest;
 import static fiji.expressionparser.test.TestUtilities.getEvaluationResult;
 import static fiji.expressionparser.test.TestUtilities.image_A;
 import static org.junit.Assert.assertTrue;
+import fiji.expressionparser.test.TestUtilities.ExpectedExpression;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +20,6 @@ import net.imglib2.type.numeric.real.FloatType;
 
 import org.junit.Test;
 import org.nfunk.jep.ParseException;
-
-import fiji.expressionparser.test.TestUtilities.ExpectedExpression;
 
 
 public class TestImgLibAlgorithms <T extends RealType<T>> {

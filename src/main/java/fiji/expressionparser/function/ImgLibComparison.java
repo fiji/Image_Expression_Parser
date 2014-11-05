@@ -1,8 +1,8 @@
 package fiji.expressionparser.function;
 
-import org.nfunk.jep.ParseException;
-
 import net.imglib2.type.numeric.RealType;
+
+import org.nfunk.jep.ParseException;
 
 public final class ImgLibComparison  {
 

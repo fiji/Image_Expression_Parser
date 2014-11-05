@@ -2,6 +2,8 @@ package fiji.expressionparser.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import fiji.expressionparser.ImgLibParser;
+import fiji.expressionparser.ImgLibUtils;
 
 import java.io.PrintStream;
 import java.util.HashMap;
@@ -18,9 +20,6 @@ import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.Node;
 import org.nfunk.jep.ParseException;
-
-import fiji.expressionparser.ImgLibParser;
-import fiji.expressionparser.ImgLibUtils;
 
 public class TestUtilities <T extends RealType<T>> {
 	

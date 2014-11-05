@@ -1,12 +1,5 @@
 package fiji.expressionparser;
 
-import java.util.ArrayList;
-
-import net.imglib2.type.numeric.RealType;
-
-import org.nfunk.jep.JEP;
-import org.nfunk.jep.type.NumberFactory;
-
 import fiji.expressionparser.function.ImgLibAbs;
 import fiji.expressionparser.function.ImgLibArcCosine;
 import fiji.expressionparser.function.ImgLibArcSine;
@@ -27,6 +20,13 @@ import fiji.expressionparser.function.ImgLibRound;
 import fiji.expressionparser.function.ImgLibSine;
 import fiji.expressionparser.function.ImgLibSquareRoot;
 import fiji.expressionparser.function.ImgLibTangent;
+
+import java.util.ArrayList;
+
+import net.imglib2.type.numeric.RealType;
+
+import org.nfunk.jep.JEP;
+import org.nfunk.jep.type.NumberFactory;
 
 public class ImgLibParser <T extends RealType<T>> extends JEP {
 

@@ -1,5 +1,7 @@
 package fiji.expressionparser.function;
 
+import fiji.expressionparser.ImgLibUtils;
+
 import java.util.Stack;
 
 import net.imglib2.algorithm.floydsteinberg.FloydSteinbergDithering;
@@ -10,8 +12,6 @@ import net.imglib2.type.numeric.real.FloatType;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
-
-import fiji.expressionparser.ImgLibUtils;
 
 public class ImgLibDithering <T extends RealType<T>> extends PostfixMathCommand implements ImgLibFunction<T> {
 
