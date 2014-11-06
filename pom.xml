@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>sc.fiji</groupId>
 		<artifactId>pom-fiji</artifactId>
-		<version>2.0.0-beta-0</version>
+		<version>5.0.1</version>
 		<relativePath />
 	</parent>
 
@@ -33,11 +33,11 @@
 		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithms</artifactId>
+			<artifactId>imglib2-algorithm</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithms-gpl</artifactId>
+			<artifactId>imglib2-algorithm-gpl</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.scijava</groupId>
@@ -69,5 +69,27 @@
 			<url>http://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<dependencies>
+								<dependency>
+									<artifactId>imglib2-algorithm-gpl</artifactId>
+									<ignoreClasses>
+										<ignoreClass>net/imglib2/algorithm/region/localneighborhood/HyperSphereNeighborhood</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+							</dependencies>
+						</banDuplicateClasses>
+					</rules>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
