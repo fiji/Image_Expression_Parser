@@ -6,6 +6,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
 
 public class ImgLibUtils  {
 
@@ -22,7 +23,7 @@ public class ImgLibUtils  {
 		Img<FloatType> target = new ArrayImgFactory<FloatType>()
 			.create(dimensions, new FloatType());
 		// Check if all Containers are compatibles
-		boolean compatible_containers = img.equalIterationOrder(target);
+		boolean compatible_containers = Util.equalIterationOrder(img, target);
 
 		if (compatible_containers) {
 

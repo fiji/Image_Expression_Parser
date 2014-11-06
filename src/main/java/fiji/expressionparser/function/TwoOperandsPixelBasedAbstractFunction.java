@@ -8,6 +8,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
 
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
@@ -76,7 +77,7 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 			.create(dimensions, new FloatType());
 
 		// Check if all Containers are compatibles
-		boolean compatible_containers = img1.equalIterationOrder(img2);
+		boolean compatible_containers = Util.equalIterationOrder(img1, img2);
 
 		if (compatible_containers) {
 
