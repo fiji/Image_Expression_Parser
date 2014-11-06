@@ -13,7 +13,7 @@
 	</parent>
 
 	<artifactId>Image_Expression_Parser</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1-SNAPSHOT</version>
 
 	<name>plugins/Image_Expression_Parser.jar</name>
 	<description></description>
