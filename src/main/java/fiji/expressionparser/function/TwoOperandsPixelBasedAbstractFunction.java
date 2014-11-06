@@ -24,7 +24,7 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 		Object result = null;
 
 		if (param1 instanceof Img<?>) {
-			
+
 			if (param2 instanceof Img<?>) {
 				result = evaluate((Img)param1, (Img)param2);
 			} else if (param2 instanceof RealType) {
@@ -37,11 +37,11 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 				throw new ParseException("In function '" + getFunctionString()
 						+"': Bad type of operand 2: "+param2.getClass().getSimpleName() );
 			}
-		
+
 		} else if (param1 instanceof RealType ) {
 
 			FloatType t1 = (FloatType)param1;
-			
+
 			if (param2 instanceof Img<?>) {
 				result = evaluate(t1, (Img)param2);
 			} else if (param2 instanceof RealType) {
@@ -56,30 +56,30 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 			throw new ParseException("In function '" + getFunctionString()
 					+"': Bad type of operand 1: "+param1.getClass().getSimpleName() );
 		}
-		
-		
+
+
 		inStack.push(result);
 	}
 
 	/**
 	 * Evaluate this function on two images, and return result as an image.
-	 * @param img1  The first image 
-	 * @param img2  The second image 
+	 * @param img1  The first image
+	 * @param img2  The second image
 	 * @return  The resulting image
 	 */
 	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img1, final Img<R> img2) throws ParseException {
-		
+
 		// Create target image
 		final long[] dimensions = new long[img1.numDimensions()];
 		img1.dimensions(dimensions);
 		Img<FloatType> result = new ArrayImgFactory<FloatType>()
 			.create(dimensions, new FloatType());
-		
+
 		// Check if all Containers are compatibles
 		boolean compatible_containers = img1.equalIterationOrder(img2);
-		
+
 		if (compatible_containers) {
-			
+
 			Cursor<R> c1 = img1.cursor();
 			Cursor<R> c2 = img2.cursor();
 			Cursor<FloatType> rc = result.cursor();
@@ -89,9 +89,9 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 				rc.fwd();
 				rc.get().set( evaluate(c1.get(), c2.get()) );
 			}
-			
+
 		} else {
-			
+
 			Cursor<FloatType> rc = result.localizingCursor();
 			RandomAccess<R> c1 = img1.randomAccess();
 			RandomAccess<R> c2 = img2.randomAccess();
@@ -101,18 +101,18 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 				c2.setPosition(rc);
 				rc.get().set( evaluate(c1.get(), c2.get()) );
 			}
-			
+
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
-	 * Right-singleton expansion. Evaluate this function on an image and an image that would be of same 
+	 * Right-singleton expansion. Evaluate this function on an image and an image that would be of same
 	 * dimension but with all element being the number passed in argument.
-	 * @param img  The image 
-	 * @param alpha  The number to do singleton expansion on 
-	 * @return  The resulting image 
+	 * @param img  The image
+	 * @param alpha  The number to do singleton expansion on
+	 * @return  The resulting image
 	 */
 	public final <R extends RealType<R>> Img<FloatType> evaluate(final Img<R> img, final R alpha) throws ParseException {
 		// Create target image
@@ -120,25 +120,25 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 		img.dimensions(dimensions);
 		Img<FloatType> result = new ArrayImgFactory<FloatType>()
 			.create(dimensions, new FloatType());
-		
+
 		Cursor<R> ic = img.cursor();
 		Cursor<FloatType> rc = result.cursor();
-		
+
 		while (rc.hasNext()) {
 			rc.fwd();
 			ic.fwd();
 			rc.get().set(evaluate(ic.get(), alpha));
 		}
-				
+
 		return result;
 	}
 
 	/**
-	 * Left-singleton expansion. Evaluate this function on an image and an image that would be of same 
+	 * Left-singleton expansion. Evaluate this function on an image and an image that would be of same
 	 * dimension but with all element being the number passed in argument.
-	 * @param img  The image 
-	 * @param alpha  The number to do singleton expansion on 
-	 * @return  The resulting image 
+	 * @param img  The image
+	 * @param alpha  The number to do singleton expansion on
+	 * @return  The resulting image
 	 */
 	public final <R extends RealType<R>> Img<FloatType> evaluate(final R alpha, final Img<R> img) throws ParseException {
 		// Create target image
@@ -146,23 +146,23 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 		img.dimensions(dimensions);
 		Img<FloatType> result = new ArrayImgFactory<FloatType>()
 			.create(dimensions, new FloatType());
-		
+
 		Cursor<R> ic = img.cursor();
 		Cursor<FloatType> rc = result.cursor();
-		
+
 		while (rc.hasNext()) {
 			rc.fwd();
 			ic.fwd();
 			rc.get().set(evaluate(alpha, ic.get()));
 		}
-				
+
 		return result;
 	}
-	
+
 	/**
 	 * Evaluate this function on two numeric types. Argument types can be of any numeric type, but a float must
 	 * be returned, so as to avoid underflow and overflow problems on bounded types (e.g. ByeType).
-	 * @param alpha1  The first number 
+	 * @param alpha1  The first number
 	 * @param alpha2  The second number
 	 * @return  The resulting number
 	 */

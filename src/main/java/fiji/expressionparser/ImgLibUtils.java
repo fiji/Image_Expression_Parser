@@ -8,9 +8,9 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 public class ImgLibUtils  {
-	
+
 	/**
-	 * Copy the given Image of type extending RealType to a FloatType image. 
+	 * Copy the given Image of type extending RealType to a FloatType image.
 	 * @param <T>
 	 * @param img
 	 * @return
@@ -23,9 +23,9 @@ public class ImgLibUtils  {
 			.create(dimensions, new FloatType());
 		// Check if all Containers are compatibles
 		boolean compatible_containers = img.equalIterationOrder(target);
-		
+
 		if (compatible_containers) {
-			
+
 			Cursor<T> ic = img.cursor();
 			Cursor<FloatType> tc = target.cursor();
 			while (ic.hasNext()) {
@@ -33,9 +33,9 @@ public class ImgLibUtils  {
 				tc.fwd();
 				tc.get().set( ic.get().getRealFloat() );
 			}
-			
+
 		} else {
-			
+
 			Cursor<FloatType> tc = target.localizingCursor();
 			RandomAccess<T> ic = img.randomAccess();
 			while (tc.hasNext()) {
@@ -43,11 +43,11 @@ public class ImgLibUtils  {
 				ic.setPosition(tc);
 				tc.get().set( ic.get().getRealFloat() );
 			}
-			
+
 		}
-		
+
 		return target;
 	}
-	
+
 
 }
