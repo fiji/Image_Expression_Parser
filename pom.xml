@@ -17,6 +17,8 @@
 
 	<name>plugins/Image_Expression_Parser.jar</name>
 	<description></description>
+	<url>http://imagej.net/Image_Expression_Parser</url>
+	<inceptionYear>2010</inceptionYear>
 
 	<developers>
 		<developer>
