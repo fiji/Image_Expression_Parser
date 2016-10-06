@@ -7,6 +7,7 @@ import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.FloatProcessor;
+import ij.Prefs;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -352,7 +353,7 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 	 * Shows a basic dialog to perform the image parsing that is macro recordable 
 	 */
 	private void showDialog() {
-		
+		String prefix = "expression.parser.";
 		// Ideally I would have used getImageTitles() but with the current POM it is not implemented in WindowManager...
 		int n_images = WindowManager.getImageCount();
 		
@@ -364,9 +365,12 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 			image_names[i+1] = WindowManager.getImage(i+1).getTitle();
 		}
 		GenericDialog gd = new GenericDialog("Image Expression Parser");
-		gd.addStringField("Expression", "A^2", 15);
+		expression = Prefs.get(prefix+"expression.val", "A^2");
+		gd.addStringField("Expression", expression, 20);
+		
 		for (int i=0; i< n_images; i++) {
-			gd.addChoice(String.valueOf(letters[i]), image_names, image_names[i+1]);
+			String tmp_choice = Prefs.get(prefix+"image.selection."+i, image_names[i+1]);
+			gd.addChoice(String.valueOf(letters[i]), image_names, tmp_choice);
 		}
 		gd.showDialog();
 		
@@ -375,17 +379,18 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 		}
 		
 		expression = gd.getNextString();
+		Prefs.set(prefix+"expression.val", expression);
 		image_map = new HashMap<String, Img<T>>(1);
 		for (int i=0; i< n_images; i++) {
 			String im = gd.getNextChoice();
 			if(!im.equals("None")) {
+				Prefs.set(prefix+"image.selection."+i, im );
 				image_map.put(String.valueOf(letters[i]), ImagePlusAdapter.<T>wrap(WindowManager.getImage(im)));
 			}
 		}
-		//IJ.log("nElements"+image_map.size());
 		
 		if(process()) {
-			ImageJFunctions.show(getResult());
+			ImageJFunctions.show(getResult(), "Parsed with "+expression);
 		} else {
 			IJ.error(error_message);
 		}
