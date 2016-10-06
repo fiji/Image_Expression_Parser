@@ -382,7 +382,7 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 				image_map.put(String.valueOf(letters[i]), ImagePlusAdapter.<T>wrap(WindowManager.getImage(im)));
 			}
 		}
-		IJ.log("nElements"+image_map.size());
+		//IJ.log("nElements"+image_map.size());
 		
 		if(process()) {
 			ImageJFunctions.show(getResult());
