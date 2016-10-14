@@ -3,8 +3,11 @@ package fiji.process;
 import fiji.expressionparser.ImgLibParser;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.WindowManager;
+import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.FloatProcessor;
+import ij.Prefs;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -125,13 +128,16 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 	 * Calculations will be later delegated by the GUI to <b>this</b> instance.
 	 */
 	public void run(String arg) {
+		if (arg.equals("macro")) {
+			showDialog();
+			
+		} else {
 		// Launch GUI and delegate work to it
 		IepGui<T> gui = displayGUI();		
 		gui.setIep(this);
+		}
 	}
 	
-	
-
 	/*
 	 * PUBLIC METHODS
 	 */
@@ -340,6 +346,55 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 		return map;
 	}
 		
+	/*
+	 * PRIVATE METHODS
+	 */
+	/**
+	 * Shows a basic dialog to perform the image parsing that is macro recordable 
+	 */
+	private void showDialog() {
+		String prefix = "expression.parser.";
+		// Ideally I would have used getImageTitles() but with the current POM it is not implemented in WindowManager...
+		int n_images = WindowManager.getImageCount();
+		
+		String[] image_names = new String[n_images+1];
+		char[] letters = "ABCDEFGHIJKLMNOPQRTSUVWXYZ".toCharArray();
+		
+		image_names[0] = "None";
+		for (int i=0; i< n_images; i++) {
+			image_names[i+1] = WindowManager.getImage(i+1).getTitle();
+		}
+		GenericDialog gd = new GenericDialog("Image Expression Parser");
+		expression = Prefs.get(prefix+"expression.val", "A^2");
+		gd.addStringField("Expression", expression, 20);
+		
+		for (int i=0; i< n_images; i++) {
+			String tmp_choice = Prefs.get(prefix+"image.selection."+i, image_names[i+1]);
+			gd.addChoice(String.valueOf(letters[i]), image_names, tmp_choice);
+		}
+		gd.showDialog();
+		
+		if(gd.wasCanceled()) {
+			return;
+		}
+		
+		expression = gd.getNextString();
+		Prefs.set(prefix+"expression.val", expression);
+		image_map = new HashMap<String, Img<T>>(1);
+		for (int i=0; i< n_images; i++) {
+			String im = gd.getNextChoice();
+			if(!im.equals("None")) {
+				Prefs.set(prefix+"image.selection."+i, im );
+				image_map.put(String.valueOf(letters[i]), ImagePlusAdapter.<T>wrap(WindowManager.getImage(im)));
+			}
+		}
+		
+		if(process()) {
+			ImageJFunctions.show(getResult(), "Parsed with "+expression);
+		} else {
+			IJ.error(error_message);
+		}
+	}
 	
 	/*
 	 * MAIN METHOD
