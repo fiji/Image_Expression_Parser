@@ -163,8 +163,8 @@ public abstract class TwoOperandsPixelBasedAbstractFunction <T extends RealType<
 	/**
 	 * Evaluate this function on two numeric types. Argument types can be of any numeric type, but a float must
 	 * be returned, so as to avoid underflow and overflow problems on bounded types (e.g. ByeType).
-	 * @param alpha1  The first number
-	 * @param alpha2  The second number
+	 * @param t1  The first number
+	 * @param t2  The second number
 	 * @return  The resulting number
 	 */
 	 public abstract <R extends RealType<R>> float evaluate(final R t1, final R t2) throws ParseException;

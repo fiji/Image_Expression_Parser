@@ -35,8 +35,7 @@ import org.nfunk.jep.ParseException;
  * are supported.
  * <p>
  * The parsing ability is provided by the JEP library: Java Expression Parser v.jep-2.4.1-ext-1.1.1-gpl.
- * This is the last version released under the GPL by its authors Nathan Funk and Richard Morris,
- * see {@link http://www.singularsys.com/jep/}.
+ * This is the last version released under the GPL by its authors Nathan Funk and Richard Morris.
  * <p>
  * Internally, this plugin uses ImgLib to deal with images. 
  * <p>
@@ -72,7 +71,7 @@ import org.nfunk.jep.ParseException;
  * # Instantiate plugin
  * parser = fiji.process.Image_Expression_Parser()
  * 
- * # Configure & execute
+ * # Configure &amp; execute
  * parser.setImageMap(map)
  * parser.setExpression(expression)
  * parser.process()
@@ -104,7 +103,8 @@ import org.nfunk.jep.ParseException;
  * 		</ul> 
  * </ul>
  *   
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>, Albert Cardona <acardona@ini.phys.ethz.ch>
+ * @author Jean-Yves Tinevez
+ * @author Albert Cardona
  */	
 public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> implements PlugIn, OutputAlgorithm<Img<T>> {
 	
@@ -179,7 +179,6 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 	 * If the expression is invalid or if the image dimensions mismatch, an error
 	 * is thrown and the field {@link #result} is set to <code>null</code>. In this
 	 * case, an explanatory error message can be obtained by {@link #getErrorMessage()}.
-	 * @see {@link #setExpression(String)}, {@link #setImageMap(Map)}, {@link #getErrorMessage()}, {@link #getResult()}
 	 */
 	@SuppressWarnings("unchecked")
 	public boolean process() {
@@ -325,7 +324,7 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 	}
 	
 	/**
-	 * Convert the <String ImagePlus> map in argument to a <String, {@link Img}> HasMap 
+	 * Convert the <code>String ImagePlus</code> map in argument to a <code>String, Img</code> HasMap 
 	 * and put it in the "{@link #image_map}" field.
 	 * <p>
 	 * The internals of this plugin operate on {@link Img}, but for integration within 
@@ -333,7 +332,7 @@ public class Image_Expression_Parser<T extends RealType<T> & NativeType<T>> impl
 	 * we execute this plugin from ImageJ.
 	 * <p>
 	 * Warning: executing this method resets the {@link #image_map} field.
-	 * @param imp_map  the <String, ImagePlus> map to convert
+	 * @param imp_map  the <code>String, ImagePlus</code> map to convert
 	 */
 	public Map<String, Img<T>> convertToImglib(Map<String, ImagePlus> imp_map) {
 		Map<String, Img<T>> map = new HashMap<String, Img<T>>(imp_map.size());

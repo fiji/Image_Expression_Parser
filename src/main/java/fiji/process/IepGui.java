@@ -72,7 +72,8 @@ import net.imglib2.type.numeric.RealType;
  * 
  * <p>
  * This GUI was built in part using Jigloo GUI builder http://www.cloudgarden.com/jigloo/.
- * @author Jean-Yves Tinevez <jeanyves.tinevez@gmail.com>, Albert Cardona <acardona@ini.phys.ethz.ch>
+ * @author Jean-Yves Tinevez 
+ * @author Albert Cardona
  */
 public class IepGui <T extends RealType<T> & NativeType<T>> extends javax.swing.JFrame implements ImageListener, WindowListener {
 	/*
@@ -279,7 +280,6 @@ public class IepGui <T extends RealType<T> & NativeType<T>> extends javax.swing.
 	 * Return a {@link Map} whose keys are the variable names as String, and the values
 	 * are the {@link ImagePlus} linked to the key variable. In the case of this GUI,
 	 * variables are single capital letters.
-	 * @see {@link IepGui#getExpression()}
 	 */
 	public Map<String, ImagePlus> getImageMap() {
 		if (images.size() > 0) {
@@ -302,7 +302,6 @@ public class IepGui <T extends RealType<T> & NativeType<T>> extends javax.swing.
 	/**
 	 * Return the expression set by this GUI. The GUI works ensures that the user can press the 'OK'
 	 * button only if this expression is mathematically valid and has valid variables.
-	 * @see {@link #getImageMap()}  
 	 */
 	public String getExpression() {
 		String expression = (String) expressionField.getSelectedItem();
