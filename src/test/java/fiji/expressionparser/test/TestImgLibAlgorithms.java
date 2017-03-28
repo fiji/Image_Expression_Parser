@@ -41,10 +41,15 @@ public class TestImgLibAlgorithms <T extends RealType<T>> {
 			0.0,			0.0,			0.0,			0.0,			0.0,			0.0,			0.0,			0.0,										0.0 
 	};
 	private static final int[] TO_NORMALIZE = new int[] {
-		0,	0,	0,	0,
-		0,	50, 50, 0,
-		0, 	0,	0,	0,
-		0,	0,	0,	0	};
+		0,	0,	0,	0, 0,	0,	0,	0, 0, 
+		0,	50, 50, 0, 0,	0,	0,	0, 0, 
+		0, 	0,	0,	0, 0,	0,	0,	0, 0,
+		0, 	0,	0,	0, 0,	0,	0,	0, 0,
+		0, 	0,	0,	0, 0,	0,	0,	0, 0,
+		0, 	0,	0,	0, 0,	0,	0,	0, 0,
+		0, 	0,	0,	0, 0,	0,	0,	0, 0,
+		0, 	0,	0,	0, 0,	0,	0,	0, 0,
+		0,	0,	0,	0, 0,	0,	0,	0, 0	};
 	
 	private Img<UnsignedShortType> image_C;
 	private Img<UnsignedShortType> image_D;
@@ -208,5 +213,4 @@ public class TestImgLibAlgorithms <T extends RealType<T>> {
 		final double xval = Math.exp( -(x-WIDTH/2) * (x-WIDTH/2) / 2*SIGMA*SIGMA);
 		return (float) (PULSE_VALUE * xval * yval * zval / Math.pow(Math.sqrt(2*Math.PI)*SIGMA, 3));	
 	}
-	
 }
