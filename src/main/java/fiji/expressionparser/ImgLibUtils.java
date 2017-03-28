@@ -16,23 +16,23 @@ public class ImgLibUtils
 	 * 
 	 * @param <T>
 	 * @param img
-	 * @return
+	 * @return a new Img.
 	 */
-	public static final < T extends RealType< T > > Img< FloatType > copyToFloatTypeImage( Img< T > img )
+	public static final < T extends RealType< T > > Img< FloatType > copyToFloatTypeImage( final Img< T > img )
 	{
 		// Create target image
 		final long[] dimensions = new long[ img.numDimensions() ];
 		img.dimensions( dimensions );
-		Img< FloatType > target = new ArrayImgFactory< FloatType >()
+		final Img< FloatType > target = new ArrayImgFactory< FloatType >()
 				.create( dimensions, new FloatType() );
 		// Check if all Containers are compatibles
-		boolean compatible_containers = Util.equalIterationOrder( img, target );
+		final boolean compatible_containers = Util.equalIterationOrder( img, target );
 
 		if ( compatible_containers )
 		{
 
-			Cursor< T > ic = img.cursor();
-			Cursor< FloatType > tc = target.cursor();
+			final Cursor< T > ic = img.cursor();
+			final Cursor< FloatType > tc = target.cursor();
 			while ( ic.hasNext() )
 			{
 				ic.fwd();
@@ -44,8 +44,8 @@ public class ImgLibUtils
 		else
 		{
 
-			Cursor< FloatType > tc = target.localizingCursor();
-			RandomAccess< T > ic = img.randomAccess();
+			final Cursor< FloatType > tc = target.localizingCursor();
+			final RandomAccess< T > ic = img.randomAccess();
 			while ( tc.hasNext() )
 			{
 				tc.fwd();

@@ -1,5 +1,8 @@
 package fiji.process;
 
+import org.nfunk.jep.Node;
+import org.nfunk.jep.ParseException;
+
 import fiji.expressionparser.ImgLibParser;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
@@ -10,13 +13,10 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-import org.nfunk.jep.Node;
-import org.nfunk.jep.ParseException;
-
 public class Test_JEP
 {
 
-	public static < T extends RealType< T > & NativeType< T > > void main( String[] args )
+	public static < T extends RealType< T > & NativeType< T > > void main( final String[] args )
 	{
 		System.out.println( "Testing JEP extension" );
 
@@ -24,18 +24,18 @@ public class Test_JEP
 //		ImagePlus imp = ij.IJ.openImage("http://rsb.info.nih.gov/ij/images/blobs.gif");
 
 		System.out.println( "\nCreating point image." );
-		ImagePlus imp = ij.gui.NewImage.createFloatImage( "Point", 128, 128, 32, ij.gui.NewImage.FILL_BLACK );
-		float[] px = ( float[] ) imp.getStack().getPixels( 16 );
+		final ImagePlus imp = ij.gui.NewImage.createFloatImage( "Point", 128, 128, 32, ij.gui.NewImage.FILL_BLACK );
+		final float[] px = ( float[] ) imp.getStack().getPixels( 16 );
 		px[ 128 * 128 / 2 + 64 ] = 1e3f;
 
-		Img< T > img = ImagePlusAdapter.< T >wrap( imp );
+		final Img< T > img = ImagePlusAdapter.< T >wrap( imp );
 		imp.show();
 
 		float max = Float.NEGATIVE_INFINITY;
 		float min = Float.POSITIVE_INFINITY;
 		for ( int i = 0; i < imp.getStackSize(); i++ )
 		{
-			ImageProcessor ip = imp.getStack().getProcessor( i + 1 );
+			final ImageProcessor ip = imp.getStack().getProcessor( i + 1 );
 			for ( int index = 0; index < ip.getPixelCount(); index++ )
 			{
 				if ( ip.getf( index ) > max )
@@ -48,7 +48,7 @@ public class Test_JEP
 
 		System.out.println( "\nImage converted to ImgLib: " + img );
 
-		String[] expressions = {
+		final String[] expressions = {
 				"A * A",
 				"2 * A",
 				"A + A - 2*A",
@@ -60,11 +60,11 @@ public class Test_JEP
 
 		};
 
-		ImgLibParser< T > parser = new ImgLibParser< T >();
+		final ImgLibParser< T > parser = new ImgLibParser< T >();
 		parser.addStandardFunctions();
 		parser.addImgLibAlgorithms();
 
-		for ( String expression : expressions )
+		for ( final String expression : expressions )
 		{
 
 			System.err.flush();
@@ -74,21 +74,22 @@ public class Test_JEP
 			try
 			{
 
-				Node root_node = parser.parse( expression );
+				final Node root_node = parser.parse( expression );
 
 				System.out.flush();
-				Img< ? > result = ( Img< ? > ) parser.evaluate( root_node );
+				final Img< ? > result = ( Img< ? > ) parser.evaluate( root_node );
 				System.out.println( "Checking for errors: " + parser.getErrorInfo() );
 				System.out.println( "Resut is: " + result );
-				ImagePlus target_imp = ImageJFunctions.show( ( Img ) result );
+				@SuppressWarnings( { "unchecked", "rawtypes" } )
+				final ImagePlus target_imp = ImageJFunctions.show( ( Img ) result );
 				target_imp.show();
 
 				max = Float.NEGATIVE_INFINITY;
 				min = Float.POSITIVE_INFINITY;
 				for ( int i = 0; i < target_imp.getStackSize(); i++ )
 				{
-					FloatProcessor fp = ( FloatProcessor ) target_imp.getStack().getProcessor( i + 1 );
-					float[] arr = ( float[] ) fp.getPixels();
+					final FloatProcessor fp = ( FloatProcessor ) target_imp.getStack().getProcessor( i + 1 );
+					final float[] arr = ( float[] ) fp.getPixels();
 					for ( int j = 0; j < arr.length; j++ )
 					{
 						if ( arr[ j ] > max )
@@ -102,7 +103,7 @@ public class Test_JEP
 				System.out.println( String.format( "Min and max: %.2f - %.2f", min, max ) );
 
 			}
-			catch ( ParseException e )
+			catch ( final ParseException e )
 			{
 
 				System.out.flush();

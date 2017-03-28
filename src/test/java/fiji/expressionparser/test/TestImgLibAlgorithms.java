@@ -4,11 +4,14 @@ import static fiji.expressionparser.test.TestUtilities.doTest;
 import static fiji.expressionparser.test.TestUtilities.getEvaluationResult;
 import static fiji.expressionparser.test.TestUtilities.image_A;
 import static org.junit.Assert.assertTrue;
-import fiji.expressionparser.test.TestUtilities.ExpectedExpression;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Test;
+import org.nfunk.jep.ParseException;
+
+import fiji.expressionparser.test.TestUtilities.ExpectedExpression;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
@@ -17,9 +20,6 @@ import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-
-import org.junit.Test;
-import org.nfunk.jep.ParseException;
 
 public class TestImgLibAlgorithms< T extends RealType< T > >
 {
@@ -64,22 +64,17 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	private Map< String, Img< UnsignedShortType > > source_map;
 	{
 		// Create source images
-		ArrayImgFactory cfact = new ArrayImgFactory();
-		UnsignedShortType type = new UnsignedShortType();
-		ImgFactory< UnsignedShortType > ifact = new ArrayImgFactory< UnsignedShortType >();
-		image_C = ifact.create( new int[] { ( int ) Math.sqrt( CONVOLVED.length ), ( int ) Math.sqrt( CONVOLVED.length ) }, type ); // Spike
-																																	// 3D
-																																	// image
-		RandomAccess< UnsignedShortType > cc = image_C.randomAccess();
+		final UnsignedShortType type = new UnsignedShortType();
+		final ImgFactory< UnsignedShortType > ifact = new ArrayImgFactory< UnsignedShortType >();
+		// Spike 3D image.
+		image_C = ifact.create( new int[] { ( int ) Math.sqrt( CONVOLVED.length ), ( int ) Math.sqrt( CONVOLVED.length ) }, type );
+		final RandomAccess< UnsignedShortType > cc = image_C.randomAccess();
 		cc.setPosition( new int[] { ( int ) Math.sqrt( CONVOLVED.length ) / 2, ( int ) Math.sqrt( CONVOLVED.length ) / 2 } );
 		cc.get().set( PULSE_VALUE );
-		//
-		image_D = ifact.create( new int[] { ( int ) Math.sqrt( TO_NORMALIZE.length ), ( int ) Math.sqrt( TO_NORMALIZE.length ) }, type ); // Simple
-																																			// image
-																																			// to
-																																			// normalize
-		RandomAccess< UnsignedShortType > cd = image_D.randomAccess();
-		int[] pos = new int[ 2 ];
+		// Simple image to normalize.
+		image_D = ifact.create( new int[] { ( int ) Math.sqrt( TO_NORMALIZE.length ), ( int ) Math.sqrt( TO_NORMALIZE.length ) }, type );
+		final RandomAccess< UnsignedShortType > cd = image_D.randomAccess();
+		final int[] pos = new int[ 2 ];
 		for ( int i = 0; i < TO_NORMALIZE.length; i++ )
 		{
 			pos[ 0 ] = i % ( int ) Math.sqrt( TO_NORMALIZE.length );
@@ -98,12 +93,12 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void gaussianConvolutionTwoImages() throws ParseException
 	{
 		// Two images -> Should generate an exception
-		String expression = "gauss(C,A)";
+		final String expression = "gauss(C,A)";
 		doTest( expression, source_map, new ExpectedExpression()
 		{
 			@Override
 			public < R extends RealType< R > > float getExpectedValue(
-					Map< String, RandomAccess< R > > cursors )
+					final Map< String, RandomAccess< R > > cursors )
 			{
 				return 0;
 			}
@@ -114,12 +109,12 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void gaussianConvolutionBadOrder() throws ParseException
 	{
 		// Bad order -> Should generate an exception
-		String expression = "gauss(1,C)";
+		final String expression = "gauss(1,C)";
 		doTest( expression, source_map, new ExpectedExpression()
 		{
 			@Override
 			public < R extends RealType< R > > float getExpectedValue(
-					Map< String, RandomAccess< R > > cursors )
+					final Map< String, RandomAccess< R > > cursors )
 			{
 				return 0;
 			}
@@ -130,10 +125,10 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void gaussianConvolution() throws ParseException
 	{
 		// Should work
-		String expression = "gauss(C," + SIGMA + ")";
+		final String expression = "gauss(C," + SIGMA + ")";
 		doTest( expression, source_map, new ExpectedExpression()
 		{
-			private int[] position = new int[ 2 ];
+			private final int[] position = new int[ 2 ];
 
 			@Override
 			public < R extends RealType< R > > float getExpectedValue( final Map< String, RandomAccess< R > > cursors )
@@ -150,7 +145,7 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void normalize() throws ParseException
 	{
 		// Should work
-		String expression = "normalize(D)";
+		final String expression = "normalize(D)";
 		doTest( expression, source_map, new ExpectedExpression()
 		{
 			@Override
@@ -182,9 +177,9 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void dither() throws ParseException
 	{
 		// Should work
-		String expression = "dither(A)";
-		Img< FloatType > result = getEvaluationResult( expression, source_map );
-		Cursor< FloatType > cr = result.cursor();
+		final String expression = "dither(A)";
+		final Img< FloatType > result = getEvaluationResult( expression, source_map );
+		final Cursor< FloatType > cr = result.cursor();
 		while ( cr.hasNext() )
 		{
 			cr.fwd();
@@ -205,9 +200,9 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void ditherThreshold() throws ParseException
 	{
 		// Should work
-		String expression = "dither(A,100)";
-		Img< FloatType > result = getEvaluationResult( expression, source_map );
-		Cursor< FloatType > cr = result.cursor();
+		final String expression = "dither(A,100)";
+		final Img< FloatType > result = getEvaluationResult( expression, source_map );
+		final Cursor< FloatType > cr = result.cursor();
 		while ( cr.hasNext() )
 		{
 			cr.fwd();
@@ -228,9 +223,9 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void ditherBadOrder() throws ParseException
 	{
 		// Should NOT work
-		String expression = "dither(100,A)";
-		Img< FloatType > result = getEvaluationResult( expression, source_map );
-		Cursor< FloatType > cr = result.cursor();
+		final String expression = "dither(100,A)";
+		final Img< FloatType > result = getEvaluationResult( expression, source_map );
+		final Cursor< FloatType > cr = result.cursor();
 		while ( cr.hasNext() )
 		{
 			cr.fwd();
@@ -251,9 +246,9 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void ditherBadNumberOfArgs() throws ParseException
 	{
 		// Should NOT work
-		String expression = "dither(A,100,10)";
-		Img< FloatType > result = getEvaluationResult( expression, source_map );
-		Cursor< FloatType > cr = result.cursor();
+		final String expression = "dither(A,100,10)";
+		final Img< FloatType > result = getEvaluationResult( expression, source_map );
+		final Cursor< FloatType > cr = result.cursor();
 		while ( cr.hasNext() )
 		{
 			cr.fwd();
@@ -274,9 +269,9 @@ public class TestImgLibAlgorithms< T extends RealType< T > >
 	public void ditherBadNumberOfArgs2() throws ParseException
 	{
 		// Should NOT work
-		String expression = "dither()";
-		Img< FloatType > result = getEvaluationResult( expression, source_map );
-		Cursor< FloatType > cr = result.cursor();
+		final String expression = "dither()";
+		final Img< FloatType > result = getEvaluationResult( expression, source_map );
+		final Cursor< FloatType > cr = result.cursor();
 		while ( cr.hasNext() )
 		{
 			cr.fwd();

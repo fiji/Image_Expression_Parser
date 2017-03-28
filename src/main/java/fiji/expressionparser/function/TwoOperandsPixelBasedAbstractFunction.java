@@ -2,6 +2,9 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
+import org.nfunk.jep.ParseException;
+import org.nfunk.jep.function.PostfixMathCommand;
+
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
@@ -10,20 +13,17 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 
-import org.nfunk.jep.ParseException;
-import org.nfunk.jep.function.PostfixMathCommand;
-
 public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType< T > > extends PostfixMathCommand implements ImgLibFunction< T >
 {
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	@Override
 	public final void run( final Stack inStack ) throws ParseException
 	{
 		checkStack( inStack ); // check the stack
 
-		Object param2 = inStack.pop();
-		Object param1 = inStack.pop();
+		final Object param2 = inStack.pop();
+		final Object param1 = inStack.pop();
 		Object result = null;
 
 		if ( param1 instanceof Img< ? > )
@@ -35,12 +35,12 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 			}
 			else if ( param2 instanceof RealType )
 			{
-				FloatType t2 = ( FloatType ) param2;
+				final FloatType t2 = ( FloatType ) param2;
 				result = evaluate( ( Img ) param1, t2 );
 			}
 			else if ( param2 instanceof Double )
 			{
-				FloatType t2 = new FloatType( ( ( Double ) param2 ).floatValue() );
+				final FloatType t2 = new FloatType( ( ( Double ) param2 ).floatValue() );
 				result = evaluate( ( Img ) param1, t2 );
 			}
 			else
@@ -53,7 +53,7 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 		else if ( param1 instanceof RealType )
 		{
 
-			FloatType t1 = ( FloatType ) param1;
+			final FloatType t1 = ( FloatType ) param1;
 
 			if ( param2 instanceof Img< ? > )
 			{
@@ -61,7 +61,7 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 			}
 			else if ( param2 instanceof RealType )
 			{
-				FloatType t2 = ( FloatType ) param2;
+				final FloatType t2 = ( FloatType ) param2;
 				result = new FloatType( evaluate( t1, t2 ) ); // since it is
 																// pixel based,
 																// this must be
@@ -98,18 +98,18 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 		// Create target image
 		final long[] dimensions = new long[ img1.numDimensions() ];
 		img1.dimensions( dimensions );
-		Img< FloatType > result = new ArrayImgFactory< FloatType >()
+		final Img< FloatType > result = new ArrayImgFactory< FloatType >()
 				.create( dimensions, new FloatType() );
 
 		// Check if all Containers are compatibles
-		boolean compatible_containers = Util.equalIterationOrder( img1, img2 );
+		final boolean compatible_containers = Util.equalIterationOrder( img1, img2 );
 
 		if ( compatible_containers )
 		{
 
-			Cursor< R > c1 = img1.cursor();
-			Cursor< R > c2 = img2.cursor();
-			Cursor< FloatType > rc = result.cursor();
+			final Cursor< R > c1 = img1.cursor();
+			final Cursor< R > c2 = img2.cursor();
+			final Cursor< FloatType > rc = result.cursor();
 			while ( c1.hasNext() )
 			{
 				c1.fwd();
@@ -122,9 +122,9 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 		else
 		{
 
-			Cursor< FloatType > rc = result.localizingCursor();
-			RandomAccess< R > c1 = img1.randomAccess();
-			RandomAccess< R > c2 = img2.randomAccess();
+			final Cursor< FloatType > rc = result.localizingCursor();
+			final RandomAccess< R > c1 = img1.randomAccess();
+			final RandomAccess< R > c2 = img2.randomAccess();
 			while ( rc.hasNext() )
 			{
 				rc.fwd();
@@ -154,11 +154,11 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 		// Create target image
 		final long[] dimensions = new long[ img.numDimensions() ];
 		img.dimensions( dimensions );
-		Img< FloatType > result = new ArrayImgFactory< FloatType >()
+		final Img< FloatType > result = new ArrayImgFactory< FloatType >()
 				.create( dimensions, new FloatType() );
 
-		Cursor< R > ic = img.cursor();
-		Cursor< FloatType > rc = result.cursor();
+		final Cursor< R > ic = img.cursor();
+		final Cursor< FloatType > rc = result.cursor();
 
 		while ( rc.hasNext() )
 		{
@@ -186,11 +186,11 @@ public abstract class TwoOperandsPixelBasedAbstractFunction< T extends RealType<
 		// Create target image
 		final long[] dimensions = new long[ img.numDimensions() ];
 		img.dimensions( dimensions );
-		Img< FloatType > result = new ArrayImgFactory< FloatType >()
+		final Img< FloatType > result = new ArrayImgFactory< FloatType >()
 				.create( dimensions, new FloatType() );
 
-		Cursor< R > ic = img.cursor();
-		Cursor< FloatType > rc = result.cursor();
+		final Cursor< R > ic = img.cursor();
+		final Cursor< FloatType > rc = result.cursor();
 
 		while ( rc.hasNext() )
 		{

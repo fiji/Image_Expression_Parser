@@ -2,14 +2,15 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
+import org.nfunk.jep.ParseException;
+import org.nfunk.jep.function.PostfixMathCommand;
+
 import net.imglib2.algorithm.fft.Bandpass;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
-import org.nfunk.jep.ParseException;
-import org.nfunk.jep.function.PostfixMathCommand;
-
+@SuppressWarnings( "deprecation" )
 public class ImgLibBandPassFilter< T extends RealType< T > > extends PostfixMathCommand implements ImgLibFunction< T >
 {
 
@@ -18,13 +19,13 @@ public class ImgLibBandPassFilter< T extends RealType< T > > extends PostfixMath
 		numberOfParameters = 3;
 	}
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	@Override
-	public void run( Stack stack ) throws ParseException
+	public void run( final Stack stack ) throws ParseException
 	{
-		Object param3 = stack.pop();
-		Object param2 = stack.pop();
-		Object param1 = stack.pop();
+		final Object param3 = stack.pop();
+		final Object param2 = stack.pop();
+		final Object param1 = stack.pop();
 		Img< T > img;
 		int begin_radius, end_radius;
 
@@ -58,7 +59,7 @@ public class ImgLibBandPassFilter< T extends RealType< T > > extends PostfixMath
 		}
 
 		// Do filter
-		Bandpass< T > filter = new Bandpass< T >( img, begin_radius, end_radius );
+		final Bandpass< T > filter = new Bandpass< T >( img, begin_radius, end_radius );
 		filter.process();
 		stack.push( filter.getResult() );
 	}

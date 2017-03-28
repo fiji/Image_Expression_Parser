@@ -2,25 +2,25 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
+import org.nfunk.jep.ParseException;
+import org.nfunk.jep.function.PostfixMathCommand;
+
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-
-import org.nfunk.jep.ParseException;
-import org.nfunk.jep.function.PostfixMathCommand;
 
 public abstract class TwoOperandsAbstractFunction< T extends RealType< T > > extends PostfixMathCommand
 		implements ImgLibFunction< T >
 {
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	@Override
 	public final void run( final Stack inStack ) throws ParseException
 	{
 		checkStack( inStack ); // check the stack
 
-		Object param2 = inStack.pop();
-		Object param1 = inStack.pop();
+		final Object param2 = inStack.pop();
+		final Object param1 = inStack.pop();
 		Object result = null;
 
 		if ( param1 instanceof Img< ? > )
@@ -32,7 +32,7 @@ public abstract class TwoOperandsAbstractFunction< T extends RealType< T > > ext
 			}
 			else if ( param2 instanceof RealType )
 			{
-				FloatType t2 = ( FloatType ) param2;
+				final FloatType t2 = ( FloatType ) param2;
 				result = evaluate( ( Img ) param1, t2 );
 			}
 			else
@@ -45,7 +45,7 @@ public abstract class TwoOperandsAbstractFunction< T extends RealType< T > > ext
 		else if ( param1 instanceof FloatType )
 		{
 
-			FloatType t1 = ( FloatType ) param1;
+			final FloatType t1 = ( FloatType ) param1;
 
 			if ( param2 instanceof Img< ? > )
 			{
@@ -53,7 +53,7 @@ public abstract class TwoOperandsAbstractFunction< T extends RealType< T > > ext
 			}
 			else if ( param2 instanceof FloatType )
 			{
-				FloatType t2 = ( FloatType ) param2;
+				final FloatType t2 = ( FloatType ) param2;
 				result = new FloatType( evaluate( t1, t2 ) );
 			}
 			else

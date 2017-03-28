@@ -1,14 +1,5 @@
 package fiji.process;
 
-import fiji.expressionparser.ImgLibParser;
-import ij.CompositeImage;
-import ij.IJ;
-import ij.ImageListener;
-import ij.ImagePlus;
-import ij.WindowManager;
-import ij.plugin.RGBStackMerge;
-import ij.plugin.filter.RGBStackSplitter;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -39,6 +30,14 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
+import fiji.expressionparser.ImgLibParser;
+import ij.CompositeImage;
+import ij.IJ;
+import ij.ImageListener;
+import ij.ImagePlus;
+import ij.WindowManager;
+import ij.plugin.RGBStackMerge;
+import ij.plugin.filter.RGBStackSplitter;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
@@ -228,16 +227,16 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	private String[] image_names;
 
 	/** List of Labels for the image boxes */
-	private ArrayList< JLabel > labels = new ArrayList< JLabel >();
+	private final ArrayList< JLabel > labels = new ArrayList< JLabel >();
 
 	/** List of Combo boxes */
-	private ArrayList< JComboBox > image_boxes = new ArrayList< JComboBox >();
+	private final ArrayList< JComboBox< String > > image_boxes = new ArrayList<>();
 
 	/** Array of image variables */
 	private String[] variables;
 
 	/** This is where we store the history of valid command. */
-	private DefaultComboBoxModel expression_history = new DefaultComboBoxModel();
+	private final DefaultComboBoxModel< String > expression_history = new DefaultComboBoxModel<>();
 
 	/**
 	 * The plugin that normally calls this GUI and is responsible for
@@ -272,21 +271,22 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 
 	private JButton jButtonCancel;
 
-	private JComboBox expressionField;
+	private JComboBox< String > expressionField;
 
 	private JLabel jLabelExpression;
 
 	/**
 	 * Main method for debug
 	 */
-	public static < T extends RealType< T > & NativeType< T > > void main( String[] args )
+	public static < T extends RealType< T > & NativeType< T > > void main( final String[] args )
 	{
 		// Launch the GUI
 		SwingUtilities.invokeLater( new Runnable()
 		{
+			@Override
 			public void run()
 			{
-				IepGui< T > inst = new IepGui< T >();
+				final IepGui< T > inst = new IepGui< T >();
 				inst.setLocationRelativeTo( null );
 				inst.setVisible( true );
 			}
@@ -318,7 +318,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 * Store a link to the Image_Expression_Parser class that will be used for
 	 * computation.
 	 */
-	public void setIep( Image_Expression_Parser< T > iep )
+	public void setIep( final Image_Expression_Parser< T > iep )
 	{
 		this.image_expression_parser = iep;
 	}
@@ -335,7 +335,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 			final HashMap< String, ImagePlus > image_map = new HashMap< String, ImagePlus >( variables.length );
 			ImagePlus imp;
 			String var;
-			JComboBox box;
+			JComboBox< String > box;
 			for ( int i = 0; i < n_image_box; i++ )
 			{
 				box = image_boxes.get( i );
@@ -358,7 +358,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 */
 	public String getExpression()
 	{
-		String expression = ( String ) expressionField.getSelectedItem();
+		final String expression = ( String ) expressionField.getSelectedItem();
 		if ( null == expression )
 			return null;
 		return expression.trim();
@@ -379,14 +379,13 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		if ( images.size() > 0 )
 		{
 			final ImagePlus[] imps = new ImagePlus[ variables.length ];
-			JComboBox box;
+			JComboBox< String > box;
 			for ( int i = 0; i < n_image_box; i++ )
 			{
 				box = image_boxes.get( i );
 				if ( box.getSelectedIndex() < 0 )
-				{
 					continue;
-				}
+
 				imps[ i ] = images.get( box.getSelectedIndex() );
 			}
 			return imps;
@@ -408,10 +407,9 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		if ( !compatibleDimensions() )
 		{
 			jButtonOK.setEnabled( false );
-			for ( JComboBox box : image_boxes )
-			{
+			for ( final JComboBox< String > box : image_boxes )
 				box.setForeground( Color.RED );
-			}
+
 			jTextAreaInfo.setText( MESSAGES[ 2 ] );
 			jTextAreaInfo.setCaretPosition( 0 );
 			return false;
@@ -420,7 +418,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		else
 		{
 
-			String error = getExpressionError();
+			final String error = getExpressionError();
 			if ( error.length() != 0 )
 			{
 				jButtonOK.setEnabled( false );
@@ -434,10 +432,9 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 			{
 
 				jButtonOK.setEnabled( true );
-				for ( JComboBox box : image_boxes )
-				{
+				for ( final JComboBox< String > box : image_boxes )
 					box.setForeground( Color.BLACK );
-				}
+
 				expressionField.getEditor().getEditorComponent().setForeground( Color.BLACK );
 				jTextAreaInfo.setText( MESSAGES[ 0 ] );
 				jTextAreaInfo.setCaretPosition( 0 );
@@ -448,11 +445,11 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 
 	private void addCurrentExpressionToHistory()
 	{
-		String current_expression = ( String ) expressionField.getSelectedItem();
+		final String current_expression = ( String ) expressionField.getSelectedItem();
 		String str;
 		for ( int i = 0; i < expression_history.getSize(); i++ )
 		{
-			str = ( String ) expression_history.getElementAt( i );
+			str = expression_history.getElementAt( i );
 			if ( str.equals( current_expression ) ) { return; // already there,
 																// we do not add
 			}
@@ -466,7 +463,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 */
 	private boolean compatibleDimensions()
 	{
-		ImagePlus[] selected_images = getImages();
+		final ImagePlus[] selected_images = getImages();
 		if ( null == selected_images )
 			return true; // avoid check for empty list
 		if ( selected_images.length <= 1 ) { return true; }
@@ -488,16 +485,16 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	/**
 	 * Called when the user type something in the expression area.
 	 */
-	@SuppressWarnings( "unchecked" )
 	private String getExpressionError()
 	{
 		final String expression = getExpression();
 		if ( ( null == expression ) || ( expression.equals( "" ) ) ) { return ""; }
+		@SuppressWarnings( "rawtypes" )
 		final ImgLibParser parser = new ImgLibParser();
 		parser.addStandardConstants();
 		parser.addStandardFunctions();
 		parser.addImgLibAlgorithms();
-		for ( String var : variables )
+		for ( final String var : variables )
 		{
 			parser.addVariable( var, null ); // we do not care for value yet
 		}
@@ -509,15 +506,15 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		else
 		{
 			final String error = parser.getErrorInfo();
-			String[] errors = error.split( "\\n" );
-			StringBuilder formatted_error = new StringBuilder();
+			final String[] errors = error.split( "\\n" );
+			final StringBuilder formatted_error = new StringBuilder();
 			formatted_error.append( "Found errors in expression:\n<p>" );
-			for ( String str : errors )
+			for ( final String str : errors )
 			{
 				if ( str.startsWith( "Encountered" ) )
 				{ // catch lengthy errors
-					Pattern column_getter = Pattern.compile( "column \\d+" );
-					Matcher match = column_getter.matcher( str );
+					final Pattern column_getter = Pattern.compile( "column \\d+" );
+					final Matcher match = column_getter.matcher( str );
 					if ( match.find() )
 					{
 						formatted_error.append( "&nbsp&nbsp ■ Syntax error in expression at column " + match.group().substring( 7 ) + "\n" );
@@ -545,10 +542,10 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	{
 		if ( n_image_box >= 26 )
 			return;
-		char c = ( char ) ( 'A' + n_image_box );
+		final char c = ( char ) ( 'A' + n_image_box );
 		final JLabel label = new JLabel( String.valueOf( c ) + ":" );
 		jPanelImages.add( label );
-		final JComboBox combo_box = new JComboBox( image_names );
+		final JComboBox< String > combo_box = new JComboBox<>( image_names );
 		jPanelImages.add( combo_box );
 		combo_box.setSelectedIndex( Math.min( n_image_box, image_names.length - 1 ) );
 		final int width = jPanelImages.getWidth();
@@ -557,7 +554,8 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		combo_box.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
 		combo_box.addActionListener( new ActionListener()
 		{
-			public void actionPerformed( ActionEvent e )
+			@Override
+			public void actionPerformed( final ActionEvent e )
 			{
 				checkValid();
 			}
@@ -606,7 +604,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 */
 	private void initImageList()
 	{
-		int[] IDs = WindowManager.getIDList();
+		final int[] IDs = WindowManager.getIDList();
 		if ( null == IDs )
 		{
 			image_names = new String[] { MESSAGES[ 1 ] };
@@ -630,23 +628,19 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	private void refreshImageNames()
 	{
 		if ( images.size() < 1 )
-		{
 			image_names = new String[] { MESSAGES[ 1 ] };
-		}
 		else
-		{
 			image_names = new String[ images.size() ];
-		}
+
 		for ( int i = 0; i < images.size(); i++ )
-		{
 			image_names[ i ] = images.get( i ).getTitle();
-		}
+
 		int current_index;
-		int max_index = images.size() - 1;
-		for ( JComboBox box : image_boxes )
+		final int max_index = images.size() - 1;
+		for ( final JComboBox< String > box : image_boxes )
 		{
 			current_index = box.getSelectedIndex();
-			box.setModel( new DefaultComboBoxModel( image_names ) );
+			box.setModel( new DefaultComboBoxModel<>( image_names ) );
 			box.setSelectedIndex( Math.min( current_index, max_index ) );
 		}
 		if ( this.isShowing() )
@@ -658,7 +652,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 */
 	private void refreshImageBoxes()
 	{
-		int width = jPanelImages.getWidth();
+		final int width = jPanelImages.getWidth();
 		for ( int i = 0; i < n_image_box; i++ )
 		{
 			image_boxes.get( i ).setBounds( 30, 10 + BOX_SPACE * i, width - 50, 30 );
@@ -673,7 +667,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		variables = new String[ n_image_box ];
 		for ( int i = 0; i < n_image_box; i++ )
 		{
-			char c = ( char ) ( 'A' + i );
+			final char c = ( char ) ( 'A' + i );
 			variables[ i ] = String.valueOf( c );
 		}
 	}
@@ -697,7 +691,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 		// This method is called in the context of the event dispatch thread
 
 		// Check inputs
-		boolean is_valid = checkValid();
+		final boolean is_valid = checkValid();
 		if ( !is_valid )
 			return;
 
@@ -722,6 +716,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 				setPriority( Thread.NORM_PRIORITY );
 			}
 
+			@Override
 			public void run()
 			{
 
@@ -747,7 +742,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 					// separately, and
 					// assembled back after processing.
 					boolean is_rgb_image = false;
-					for ( String key : imp_map.keySet() )
+					for ( final String key : imp_map.keySet() )
 					{
 						if ( imp_map.get( key ).getType() == ImagePlus.COLOR_RGB )
 						{
@@ -759,18 +754,18 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 					{
 
 						// Prepare holders
-						Map< String, ImagePlus > red_map = new HashMap< String, ImagePlus >();
-						Map< String, ImagePlus > green_map = new HashMap< String, ImagePlus >();
-						Map< String, ImagePlus > blue_map = new HashMap< String, ImagePlus >();
-						ArrayList< Map< String, ImagePlus > > map_array = new ArrayList< Map< String, ImagePlus > >( 3 );
+						final Map< String, ImagePlus > red_map = new HashMap< String, ImagePlus >();
+						final Map< String, ImagePlus > green_map = new HashMap< String, ImagePlus >();
+						final Map< String, ImagePlus > blue_map = new HashMap< String, ImagePlus >();
+						final ArrayList< Map< String, ImagePlus > > map_array = new ArrayList< Map< String, ImagePlus > >( 3 );
 						map_array.add( red_map );
 						map_array.add( green_map );
 						map_array.add( blue_map );
 
 						// Split stacks
-						RGBStackSplitter channel_splitter = new RGBStackSplitter();
+						final RGBStackSplitter channel_splitter = new RGBStackSplitter();
 						ImagePlus current_imp = null;
-						for ( String key : imp_map.keySet() )
+						for ( final String key : imp_map.keySet() )
 						{
 							current_imp = imp_map.get( key );
 							// And stored individual channels in a new map
@@ -782,10 +777,10 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 
 						// Have the parser process individual channel separately
 						Map< String, Img< T > > img_map;
-						ImagePlus[] result_array = new ImagePlus[ 3 ];
+						final ImagePlus[] result_array = new ImagePlus[ 3 ];
 						Img< T > tmp_image;
 						int index = 0;
-						for ( Map< String, ImagePlus > current_map : map_array )
+						for ( final Map< String, ImagePlus > current_map : map_array )
 						{
 							img_map = image_expression_parser.convertToImglib( current_map );
 							image_expression_parser.setImageMap( img_map );
@@ -797,8 +792,8 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 						}
 
 						// Merge back channels
-						RGBStackMerge rgb_merger = new RGBStackMerge();
-						ImagePlus new_imp = rgb_merger.mergeHyperstacks( result_array, false );
+						final RGBStackMerge rgb_merger = new RGBStackMerge();
+						final ImagePlus new_imp = rgb_merger.mergeHyperstacks( result_array, false );
 						// Jump through hoops...
 						for ( int channel = new_imp.getNChannels(); channel > 0; channel-- )
 						{
@@ -832,7 +827,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 					else
 					{
 
-						Map< String, Img< T > > img_map = image_expression_parser.convertToImglib( imp_map );
+						final Map< String, Img< T > > img_map = image_expression_parser.convertToImglib( imp_map );
 						image_expression_parser.setImageMap( img_map );
 						// Call calculation
 						if ( !image_expression_parser.process() )
@@ -850,7 +845,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 						}
 						else
 						{
-							ImagePlus new_imp = ImageJFunctions.show( result_img );
+							final ImagePlus new_imp = ImageJFunctions.show( result_img );
 							if ( !target_imp.isVisible() )
 							{
 								target_imp = new_imp;
@@ -868,7 +863,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 					target_imp.updateAndDraw();
 
 				}
-				catch ( Exception e )
+				catch ( final Exception e )
 				{
 					e.printStackTrace();
 					IJ.error( "An error occurred: " + e );
@@ -888,19 +883,18 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	{
 		SwingUtilities.invokeLater( new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				jButtonOK.setEnabled( enabled );
 				expressionField.setEnabled( enabled );
-				for ( JComboBox box : image_boxes )
-				{
+				for ( final JComboBox< String > box : image_boxes )
 					box.setEnabled( enabled );
-				}
+
 				if ( enabled )
 				{
 					toFront();
-					expressionField.requestFocusInWindow(); // give focus to
-															// expression field
+					expressionField.requestFocusInWindow();
 				}
 			}
 		} );
@@ -910,19 +904,22 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 * IMAGELISTENER METHODS
 	 */
 
-	public void imageClosed( ImagePlus imp )
+	@Override
+	public void imageClosed( final ImagePlus imp )
 	{
 		images.remove( imp );
 		refreshImageNames();
 	}
 
-	public void imageOpened( ImagePlus imp )
+	@Override
+	public void imageOpened( final ImagePlus imp )
 	{
 		images.add( imp );
 		refreshImageNames();
 	}
 
-	public void imageUpdated( ImagePlus imp )
+	@Override
+	public void imageUpdated( final ImagePlus imp )
 	{}
 
 	/**
@@ -941,7 +938,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 				jSplitPane1.setResizeWeight( 0.5 );
 				{
 					jPanelRight = new JPanel();
-					GridBagLayout jPanelRightLayout = new GridBagLayout();
+					final GridBagLayout jPanelRightLayout = new GridBagLayout();
 					jPanelRightLayout.rowWeights = new double[] { 0.0, 0.0, 0.5, 0.0 };
 					jPanelRightLayout.rowHeights = new int[] { 7, 7, 7, 7 };
 					jPanelRightLayout.columnWeights = new double[] { 0.0, 0.5, 0.0 };
@@ -958,7 +955,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 						{
 							// Close the GUI
 							@Override
-							public void actionPerformed( ActionEvent e )
+							public void actionPerformed( final ActionEvent e )
 							{
 								quitGui();
 							}
@@ -972,9 +969,9 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 						jButtonOK.addActionListener( new ActionListener()
 						{
 							@Override
-							public void actionPerformed( ActionEvent e )
+							public void actionPerformed( final ActionEvent e )
 							{
-								boolean valid = checkValid();
+								final boolean valid = checkValid();
 								if ( valid )
 								{
 									addCurrentExpressionToHistory();
@@ -1004,7 +1001,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 				}
 				{
 					jPanelLeft = new JPanel();
-					GridBagLayout jPanelLeftLayout = new GridBagLayout();
+					final GridBagLayout jPanelLeftLayout = new GridBagLayout();
 					jPanelLeftLayout.rowWeights = new double[] { 0.0, 0.0, 1.0, 0.0 };
 					jPanelLeftLayout.rowHeights = new int[] { 7, 7, -33, 50 };
 					jPanelLeftLayout.columnWeights = new double[] { 0.1 };
@@ -1020,7 +1017,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 						jLabelExpression.setPreferredSize( new java.awt.Dimension( 196, 16 ) );
 					}
 					{
-						expressionField = new JComboBox( expression_history );
+						expressionField = new JComboBox<>( expression_history );
 						expressionField.setEditable( true );
 						expressionField.setBorder( new LineBorder( new java.awt.Color( 252, 117, 0 ), 1, false ) );
 						expressionField.setSize( 12, 18 );
@@ -1028,7 +1025,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 						expressionField.addActionListener( new ActionListener()
 						{
 							@Override
-							public void actionPerformed( ActionEvent e )
+							public void actionPerformed( final ActionEvent e )
 							{
 								// Two action events are fired on edit: one for
 								// editing the textfield, one for changing
@@ -1036,7 +1033,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 								// edition.
 								if ( e.getActionCommand().equalsIgnoreCase( "comboBoxEdited" ) )
 								{
-									boolean valid = checkValid();
+									final boolean valid = checkValid();
 									if ( valid )
 									{
 										addCurrentExpressionToHistory();
@@ -1075,7 +1072,8 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 							jButtonPlus.setOpaque( true );
 							jButtonPlus.addActionListener( new ActionListener()
 							{
-								public void actionPerformed( ActionEvent e )
+								@Override
+								public void actionPerformed( final ActionEvent e )
 								{
 									addImageBox();
 								}
@@ -1090,7 +1088,8 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 							jButtonMinus.setOpaque( true );
 							jButtonMinus.addActionListener( new ActionListener()
 							{
-								public void actionPerformed( ActionEvent e )
+								@Override
+								public void actionPerformed( final ActionEvent e )
 								{
 									removeImageBox();
 								}
@@ -1099,18 +1098,22 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 					}
 					jPanelLeft.addComponentListener( new ComponentListener()
 					{
-						public void componentShown( ComponentEvent e )
+						@Override
+						public void componentShown( final ComponentEvent e )
 						{}
 
-						public void componentResized( ComponentEvent e )
+						@Override
+						public void componentResized( final ComponentEvent e )
 						{
 							refreshImageBoxes();
 						}
 
-						public void componentMoved( ComponentEvent e )
+						@Override
+						public void componentMoved( final ComponentEvent e )
 						{}
 
-						public void componentHidden( ComponentEvent e )
+						@Override
+						public void componentHidden( final ComponentEvent e )
 						{}
 					} );
 				}
@@ -1118,7 +1121,7 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 			pack();
 			setSize( 500, 500 );
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			e.printStackTrace();
 		}
@@ -1128,26 +1131,33 @@ public class IepGui< T extends RealType< T > & NativeType< T > > extends javax.s
 	 * WINDOWLISTENER METHODS
 	 */
 
-	public void windowActivated( WindowEvent e )
+	@Override
+	public void windowActivated( final WindowEvent e )
 	{}
 
-	public void windowClosed( WindowEvent e )
+	@Override
+	public void windowClosed( final WindowEvent e )
 	{}
 
-	public void windowClosing( WindowEvent e )
+	@Override
+	public void windowClosing( final WindowEvent e )
 	{
 		quitGui();
 	}
 
-	public void windowDeactivated( WindowEvent e )
+	@Override
+	public void windowDeactivated( final WindowEvent e )
 	{}
 
-	public void windowDeiconified( WindowEvent e )
+	@Override
+	public void windowDeiconified( final WindowEvent e )
 	{}
 
-	public void windowIconified( WindowEvent e )
+	@Override
+	public void windowIconified( final WindowEvent e )
 	{}
 
-	public void windowOpened( WindowEvent e )
+	@Override
+	public void windowOpened( final WindowEvent e )
 	{}
 }

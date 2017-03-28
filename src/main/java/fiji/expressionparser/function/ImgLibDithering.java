@@ -1,17 +1,16 @@
 package fiji.expressionparser.function;
 
-import fiji.expressionparser.ImgLibUtils;
-
 import java.util.Stack;
 
+import org.nfunk.jep.ParseException;
+import org.nfunk.jep.function.PostfixMathCommand;
+
+import fiji.expressionparser.ImgLibUtils;
 import net.imglib2.algorithm.floydsteinberg.FloydSteinbergDithering;
 import net.imglib2.img.Img;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-
-import org.nfunk.jep.ParseException;
-import org.nfunk.jep.function.PostfixMathCommand;
 
 public class ImgLibDithering< T extends RealType< T > > extends PostfixMathCommand implements ImgLibFunction< T >
 {
@@ -22,14 +21,14 @@ public class ImgLibDithering< T extends RealType< T > > extends PostfixMathComma
 	}
 
 	@Override
-	public boolean checkNumberOfParameters( int n )
+	public boolean checkNumberOfParameters( final int n )
 	{
 		return ( n == 1 || n == 2 );
 	}
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	@Override
-	public void run( Stack stack ) throws ParseException
+	public void run( final Stack stack ) throws ParseException
 	{
 
 		// Check that we are not empty
@@ -40,7 +39,7 @@ public class ImgLibDithering< T extends RealType< T > > extends PostfixMathComma
 		Img< T > img;
 		if ( curNumberOfParameters == 1 )
 		{
-			Object param = stack.pop();
+			final Object param = stack.pop();
 
 			if ( param instanceof Img< ? > )
 			{
@@ -58,8 +57,8 @@ public class ImgLibDithering< T extends RealType< T > > extends PostfixMathComma
 		else
 		{
 			// Two parameters, 2nd one is threshold
-			Object param2 = stack.pop();
-			Object param1 = stack.pop();
+			final Object param2 = stack.pop();
+			final Object param1 = stack.pop();
 
 			if ( param1 instanceof Img< ? > )
 			{
@@ -73,7 +72,7 @@ public class ImgLibDithering< T extends RealType< T > > extends PostfixMathComma
 
 			if ( param2 instanceof RealType )
 			{
-				float dither_threshold = ( ( FloatType ) param2 ).getRealFloat();
+				final float dither_threshold = ( ( FloatType ) param2 ).getRealFloat();
 				dither = new FloydSteinbergDithering< T >( img, dither_threshold );
 			}
 			else
@@ -85,9 +84,9 @@ public class ImgLibDithering< T extends RealType< T > > extends PostfixMathComma
 
 		// Process
 		dither.process();
-		Img< BitType > result = dither.getResult();
+		final Img< BitType > result = dither.getResult();
 		if ( result == null ) { throw new RuntimeException( "Floyd-Steinberg dithering unfortunately not available with this version of ImgLib2!" ); }
-		Img< FloatType > float_result = ImgLibUtils.copyToFloatTypeImage( result ); // we
+		final Img< FloatType > float_result = ImgLibUtils.copyToFloatTypeImage( result ); // we
 																					// return
 																					// result
 																					// as

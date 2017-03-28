@@ -2,36 +2,36 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
+import org.nfunk.jep.ParseException;
+import org.nfunk.jep.function.PostfixMathCommand;
+
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
-import org.nfunk.jep.ParseException;
-import org.nfunk.jep.function.PostfixMathCommand;
-
 public abstract class SingleOperandAbstractFunction< T extends RealType< T > > extends PostfixMathCommand implements ImgLibFunction< T >
 {
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	@Override
 	public final void run( final Stack inStack ) throws ParseException
 	{
 		checkStack( inStack ); // check the stack
 
-		Object param = inStack.pop();
+		final Object param = inStack.pop();
 		Object result = null;
 
 		if ( param instanceof Img< ? > )
 		{
 
-			Img< T > img = ( Img ) param;
+			final Img< T > img = ( Img ) param;
 			result = evaluate( img );
 
 		}
 		else if ( param instanceof FloatType )
 		{
 
-			FloatType t = ( FloatType ) param;
+			final FloatType t = ( FloatType ) param;
 			result = evaluate( t );
 
 		}

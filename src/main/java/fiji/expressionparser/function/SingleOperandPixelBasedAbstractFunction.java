@@ -2,25 +2,26 @@ package fiji.expressionparser.function;
 
 import java.util.Stack;
 
+import org.nfunk.jep.ParseException;
+import org.nfunk.jep.function.PostfixMathCommand;
+
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
-import org.nfunk.jep.ParseException;
-import org.nfunk.jep.function.PostfixMathCommand;
-
 public abstract class SingleOperandPixelBasedAbstractFunction< T extends RealType< T > > extends PostfixMathCommand
 		implements ImgLibFunction< T >
 {
 
-	@SuppressWarnings( "unchecked" )
+	@Override
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	public final void run( final Stack inStack ) throws ParseException
 	{
 		checkStack( inStack ); // check the stack
 
-		Object param = inStack.pop();
+		final Object param = inStack.pop();
 		Object result = null;
 
 		if ( param instanceof Img< ? > )
@@ -32,7 +33,7 @@ public abstract class SingleOperandPixelBasedAbstractFunction< T extends RealTyp
 		else if ( param instanceof RealType )
 		{
 
-			FloatType t = ( FloatType ) param;
+			final FloatType t = ( FloatType ) param;
 			result = new FloatType( evaluate( t ) ); // since this is
 														// pixel-based, this
 														// must be a singleton
@@ -61,11 +62,11 @@ public abstract class SingleOperandPixelBasedAbstractFunction< T extends RealTyp
 		// Create target image
 		final long[] dimensions = new long[ img.numDimensions() ];
 		img.dimensions( dimensions );
-		Img< FloatType > result = new ArrayImgFactory< FloatType >()
+		final Img< FloatType > result = new ArrayImgFactory< FloatType >()
 				.create( dimensions, new FloatType() );
 
-		Cursor< T > ic = img.cursor();
-		Cursor< FloatType > rc = result.cursor();
+		final Cursor< T > ic = img.cursor();
+		final Cursor< FloatType > rc = result.cursor();
 
 		while ( rc.hasNext() )
 		{
