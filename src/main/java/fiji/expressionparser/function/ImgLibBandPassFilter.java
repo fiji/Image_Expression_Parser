@@ -10,58 +10,73 @@ import net.imglib2.type.numeric.real.FloatType;
 import org.nfunk.jep.ParseException;
 import org.nfunk.jep.function.PostfixMathCommand;
 
-public class ImgLibBandPassFilter <T extends RealType<T>> extends PostfixMathCommand implements ImgLibFunction<T>{
+public class ImgLibBandPassFilter< T extends RealType< T > > extends PostfixMathCommand implements ImgLibFunction< T >
+{
 
-	public ImgLibBandPassFilter() {
+	public ImgLibBandPassFilter()
+	{
 		numberOfParameters = 3;
 	}
-	
-	@SuppressWarnings("unchecked")
+
+	@SuppressWarnings( "unchecked" )
 	@Override
-	public void run(Stack stack) throws ParseException {
+	public void run( Stack stack ) throws ParseException
+	{
 		Object param3 = stack.pop();
 		Object param2 = stack.pop();
 		Object param1 = stack.pop();
-		Img<T> img;
+		Img< T > img;
 		int begin_radius, end_radius;
-		
+
 		// Check classes
-		if (param1 instanceof Img<?>) {
-			img = (Img) param1;
-		} else {
-			throw new ParseException("In function '" + getFunctionString()
-						+"': First operand must be an image.");
+		if ( param1 instanceof Img< ? > )
+		{
+			img = ( Img ) param1;
 		}
-		if (param2 instanceof FloatType) {
-			begin_radius = (int) ( (FloatType) param2).get();
-		} else {
-			throw new ParseException("In function '" + getFunctionString()
-					+"': Second and third operands must be numbers.");
+		else
+		{
+			throw new ParseException( "In function '" + getFunctionString()
+					+ "': First operand must be an image." );
 		}
-		if (param3 instanceof FloatType) {
-			end_radius = (int) ( (FloatType) param3).get();
-		} else {
-			throw new ParseException("In function '" + getFunctionString()
-					+"': Second and third operands must be numbers.");
+		if ( param2 instanceof FloatType )
+		{
+			begin_radius = ( int ) ( ( FloatType ) param2 ).get();
 		}
-		
-		// Do filter 
-		Bandpass<T> filter = new Bandpass<T>(img, begin_radius, end_radius);
+		else
+		{
+			throw new ParseException( "In function '" + getFunctionString()
+					+ "': Second and third operands must be numbers." );
+		}
+		if ( param3 instanceof FloatType )
+		{
+			end_radius = ( int ) ( ( FloatType ) param3 ).get();
+		}
+		else
+		{
+			throw new ParseException( "In function '" + getFunctionString()
+					+ "': Second and third operands must be numbers." );
+		}
+
+		// Do filter
+		Bandpass< T > filter = new Bandpass< T >( img, begin_radius, end_radius );
 		filter.process();
-		stack.push(filter.getResult());
+		stack.push( filter.getResult() );
 	}
-	
-	@Override
-	public String getDocumentationString() {
-		return "<h3>FFT bandpass filter</h3> " +
-		"This function filters its input in fourier space. " +
-		"Syntax: " +
-		"<br><code>" + getFunctionString() + "(A, begin_radius, end_radius)</code><br> " +
-		"where A is an image, and begin_radius and  end_radius are integers. " +
-		"Thw two radiuses are given in pixel units in the fourier space.";	}
 
 	@Override
-	public String getFunctionString() {
+	public String getDocumentationString()
+	{
+		return "<h3>FFT bandpass filter</h3> " +
+				"This function filters its input in fourier space. " +
+				"Syntax: " +
+				"<br><code>" + getFunctionString() + "(A, begin_radius, end_radius)</code><br> " +
+				"where A is an image, and begin_radius and  end_radius are integers. " +
+				"Thw two radiuses are given in pixel units in the fourier space.";
+	}
+
+	@Override
+	public String getFunctionString()
+	{
 		return "bandpass";
 	}
 

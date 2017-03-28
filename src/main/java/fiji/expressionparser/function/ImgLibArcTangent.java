@@ -2,36 +2,42 @@ package fiji.expressionparser.function;
 
 import net.imglib2.type.numeric.RealType;
 
-public final class ImgLibArcTangent <T extends RealType<T>> extends
-		SingleOperandPixelBasedAbstractFunction<T> {
+public final class ImgLibArcTangent< T extends RealType< T > > extends
+		SingleOperandPixelBasedAbstractFunction< T >
+{
 
-	public static final String DOCUMENTATION_STRING = 
-		"<h3>Element-wise arc-tangent</h3> " +
-		"This function computes the arc tangent of an ImgLib image, taking " +
-		"each pixel as its operand. Calculations are done using <i>Math.atan</i>. " +
-		"Values returned are in the range [-π/2, π/2].";
-	
-	public ImgLibArcTangent() {
+	public static final String DOCUMENTATION_STRING =
+			"<h3>Element-wise arc-tangent</h3> " +
+					"This function computes the arc tangent of an ImgLib image, taking " +
+					"each pixel as its operand. Calculations are done using <i>Math.atan</i>. " +
+					"Values returned are in the range [-π/2, π/2].";
+
+	public ImgLibArcTangent()
+	{
 		numberOfParameters = 1;
 	}
-	
+
 	@Override
-	public final <R extends RealType<R>> float evaluate(final R t) {
-		return (float) Math.atan(t.getRealDouble());
+	public final < R extends RealType< R > > float evaluate( final R t )
+	{
+		return ( float ) Math.atan( t.getRealDouble() );
 	}
 
 	@Override
-	public String getDocumentationString() {
+	public String getDocumentationString()
+	{
 		return DOCUMENTATION_STRING;
 	}
 
 	@Override
-	public String getFunctionString() {
+	public String getFunctionString()
+	{
 		return "atan";
 	}
-	
+
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return "Pixel-wise arc tangent";
 	}
 

@@ -8,40 +8,48 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 
-public class ImgLibUtils  {
+public class ImgLibUtils
+{
 
 	/**
 	 * Copy the given Image of type extending RealType to a FloatType image.
+	 * 
 	 * @param <T>
 	 * @param img
 	 * @return
 	 */
-	public static final <T extends RealType<T>> Img<FloatType> copyToFloatTypeImage(Img<T> img) {
+	public static final < T extends RealType< T > > Img< FloatType > copyToFloatTypeImage( Img< T > img )
+	{
 		// Create target image
-		final long[] dimensions = new long[img.numDimensions()];
-		img.dimensions(dimensions);
-		Img<FloatType> target = new ArrayImgFactory<FloatType>()
-			.create(dimensions, new FloatType());
+		final long[] dimensions = new long[ img.numDimensions() ];
+		img.dimensions( dimensions );
+		Img< FloatType > target = new ArrayImgFactory< FloatType >()
+				.create( dimensions, new FloatType() );
 		// Check if all Containers are compatibles
-		boolean compatible_containers = Util.equalIterationOrder(img, target);
+		boolean compatible_containers = Util.equalIterationOrder( img, target );
 
-		if (compatible_containers) {
+		if ( compatible_containers )
+		{
 
-			Cursor<T> ic = img.cursor();
-			Cursor<FloatType> tc = target.cursor();
-			while (ic.hasNext()) {
+			Cursor< T > ic = img.cursor();
+			Cursor< FloatType > tc = target.cursor();
+			while ( ic.hasNext() )
+			{
 				ic.fwd();
 				tc.fwd();
 				tc.get().set( ic.get().getRealFloat() );
 			}
 
-		} else {
+		}
+		else
+		{
 
-			Cursor<FloatType> tc = target.localizingCursor();
-			RandomAccess<T> ic = img.randomAccess();
-			while (tc.hasNext()) {
+			Cursor< FloatType > tc = target.localizingCursor();
+			RandomAccess< T > ic = img.randomAccess();
+			while ( tc.hasNext() )
+			{
 				tc.fwd();
-				ic.setPosition(tc);
+				ic.setPosition( tc );
 				tc.get().set( ic.get().getRealFloat() );
 			}
 
@@ -49,6 +57,5 @@ public class ImgLibUtils  {
 
 		return target;
 	}
-
 
 }

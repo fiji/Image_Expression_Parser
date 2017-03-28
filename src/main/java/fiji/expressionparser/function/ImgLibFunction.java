@@ -4,23 +4,23 @@ import org.nfunk.jep.function.PostfixMathCommandI;
 
 import net.imglib2.type.numeric.RealType;
 
-public interface ImgLibFunction <T extends RealType<T>> extends PostfixMathCommandI {
+public interface ImgLibFunction< T extends RealType< T > > extends PostfixMathCommandI
+{
 
 	/**
-	 * Return a String describing this operator. Example: "Addition of two operands",
-	 * "Gaussian convolution", "Element-wise cosine", ...
+	 * Return a String describing this operator. Example: "Addition of two
+	 * operands", "Gaussian convolution", "Element-wise cosine", ...
 	 */
 	@Override
 	public abstract String toString();
-	
-	
+
 	/**
-	 * Return a String containing the function name, that is, how this function 
-	 * must be represented in an expression to be called. Examples: "+", "gauss",
-	 * "cos", ...
+	 * Return a String containing the function name, that is, how this function
+	 * must be represented in an expression to be called. Examples: "+",
+	 * "gauss", "cos", ...
 	 */
 	public abstract String getFunctionString();
-	
+
 	/**
 	 * Returns a documentation string that documents in enough details what the
 	 * function does, and how. The String can use html syntax in it for
@@ -38,6 +38,5 @@ public interface ImgLibFunction <T extends RealType<T>> extends PostfixMathComma
 	 * source image is a 3D image, the convolution will be made in 3D as well.
 	 */
 	public abstract String getDocumentationString();
-	
-		
+
 }
