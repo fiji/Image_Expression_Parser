@@ -101,8 +101,8 @@
 		<url>https://github.com/fiji/Image_Expression_Parser/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.imagej.net/job/Image_Expression_Parser/</url>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/fiji/Image_Expression_Parser</url>
 	</ciManagement>
 
 	<properties>
