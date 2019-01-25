@@ -15,7 +15,7 @@
 
 	<name>Image Expression Parser</name>
 	<description>Image Expression Parser plugin for Fiji.</description>
-	<url>http://imagej.net/Image_Expression_Parser</url>
+	<url>https://imagej.net/Image_Expression_Parser</url>
 	<inceptionYear>2010</inceptionYear>
 	<organization>
 		<name>Fiji</name>
@@ -33,7 +33,7 @@
 		<developer>
 			<id>tinevez</id>
 			<name>Jean-Yves Tinevez</name>
-			<url>http://imagej.net/User:JeanYvesTinevez</url>
+			<url>https://imagej.net/User:JeanYvesTinevez</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -46,7 +46,7 @@
 		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/User:Rueden</url>
 			<roles>
 				<role>maintainer</role>
 			</roles>
@@ -55,27 +55,27 @@
 	<contributors>
 		<contributor>
 			<name>Johannes Schindelin</name>
-			<url>http://imagej.net/User:Schindelin</url>
+			<url>https://imagej.net/User:Schindelin</url>
 			<properties><id>dscho</id></properties>
 		</contributor>
 		<contributor>
 			<name>Albert Cardona</name>
-			<url>http://imagej.net/User:Albertcardona</url>
+			<url>https://imagej.net/User:Albertcardona</url>
 			<properties><id>acardona</id></properties>
 		</contributor>
 		<contributor>
 			<name>Jan Eglinger</name>
-			<url>http://imagej.net/User:Eglinger</url>
+			<url>https://imagej.net/User:Eglinger</url>
 			<properties><id>imagejan</id></properties>
 		</contributor>
 		<contributor>
 			<name>Mark Hiner</name>
-			<url>http://imagej.net/User:Hinerm</url>
+			<url>https://imagej.net/User:Hinerm</url>
 			<properties><id>hinerm</id></properties>
 		</contributor>
 		<contributor>
 			<name>Stephan Saalfeld</name>
-			<url>http://imagej.net/User:Saalfeld</url>
+			<url>https://imagej.net/User:Saalfeld</url>
 			<properties><id>axtimwalde</id></properties>
 		</contributor>
 	</contributors>
@@ -115,7 +115,7 @@
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
